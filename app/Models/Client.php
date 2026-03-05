@@ -54,4 +54,9 @@ class Client extends Model
     {
         return $this->hasMany(ClientNote::class)->latest();
     }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('fecha_emision');
+    }
 }
