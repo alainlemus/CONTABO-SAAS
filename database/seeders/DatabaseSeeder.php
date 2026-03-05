@@ -12,16 +12,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! User::where('email', 'alainttlm@gmail.com')->exists()) {
-            User::factory()->create([
-                'name' => 'Alain Lemus',
-                'email' => 'alainttlm@gmail.com',
-                'password' => bcrypt('admin123'),
-            ]);
-        }
+        $this->call(AdminSeeder::class);
 
-        $this->call([
-            ClientSeeder::class,
-        ]);
+        $admin = User::where('email', 'admin@contabo.test')->firstOrFail();
+
+        (new ClientSeeder)->run($admin);
+        (new InvoiceSeeder)->run($admin);
+        (new FiscalObligationSeeder)->run($admin);
     }
 }

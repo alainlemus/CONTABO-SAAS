@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Jobs\SendWelcomeEmail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+
+        SendWelcomeEmail::dispatch($user);
 
         return redirect('/admin');
     }

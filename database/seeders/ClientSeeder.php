@@ -8,9 +8,9 @@ use Illuminate\Database\Seeder;
 
 class ClientSeeder extends Seeder
 {
-    public function run(): void
+    public function run(?User $admin = null): void
     {
-        $admin = User::where('email', 'test@example.com')->firstOrFail();
+        $admin ??= User::where('email', 'admin@contabo.test')->firstOrFail();
 
         $clients = [
             [
