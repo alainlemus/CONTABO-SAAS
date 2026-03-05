@@ -13,9 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            FirmSeeder::class,
             ClientSeeder::class,
-            AccountSeeder::class,
         ]);
 
         if (! User::where('email', 'test@example.com')->exists()) {

@@ -19,12 +19,11 @@ class ClientFactory extends Factory
         $personType = fake()->randomElement(['fisica', 'moral']);
 
         return [
-            'firm_id' => \App\Models\Firm::factory(),
             'name' => fake()->company(),
             'tax_id' => 'C'.fake()->unique()->numerify('###########'),
             'person_type' => $personType,
             'tax_regime' => fake()->randomElement(['601', '612', '621', '625', '626']),
-            'curp' => $personType === 'fisica' ? strtoupper(fake()->bothify('????######????????##')) : null,
+            'curp' => $personType === 'fisica' ? strtoupper(fake()->bothify('????######????##??')) : null,
             'legal_rep_name' => $personType === 'moral' ? fake()->name() : null,
             'legal_rep_rfc' => $personType === 'moral' ? strtoupper(fake()->bothify('????######???')) : null,
             'economic_activity' => fake()->bs(),
@@ -33,7 +32,7 @@ class ClientFactory extends Factory
             'relationship_started_at' => fake()->optional()->dateTimeBetween('-3 years', 'now'),
             'obligations_periodicity' => fake()->randomElement(['mensual', 'bimestral', 'anual']),
             'email' => fake()->companyEmail(),
-            'phone' => fake()->phoneNumber(),
+            'phone' => null,
             'address' => fake()->streetAddress(),
             'city' => fake()->city(),
             'state' => fake()->state(),

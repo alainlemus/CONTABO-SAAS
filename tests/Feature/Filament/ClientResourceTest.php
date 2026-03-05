@@ -7,7 +7,6 @@ use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Models\Client;
-use App\Models\Firm;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -19,14 +18,11 @@ class ClientResourceTest extends TestCase
 
     private User $admin;
 
-    private Firm $firm;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->admin = User::factory()->create();
-        $this->firm = Firm::factory()->create();
     }
 
     public function test_list_clients_page_loads(): void
@@ -38,7 +34,7 @@ class ClientResourceTest extends TestCase
 
     public function test_list_clients_shows_clients(): void
     {
-        $clients = Client::factory()->count(3)->for($this->firm)->create();
+        $clients = Client::factory()->count(3)->create();
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)
@@ -57,20 +53,19 @@ class ClientResourceTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(CreateClient::class)
             ->fillForm([
-                'firm_id'          => $this->firm->id,
-                'person_type'      => 'moral',
-                'name'             => 'Empresa Test SA de CV',
-                'tax_id'           => 'ETE900101AAA',
-                'email'            => 'test@empresa.com',
-                'status'           => 'active',
-                'billing_cycle'    => 'monthly',
+                'person_type' => 'moral',
+                'name' => 'Empresa Test SA de CV',
+                'tax_id' => 'ETE900101AAA',
+                'email' => 'test@empresa.com',
+                'status' => 'active',
+                'billing_cycle' => 'monthly',
                 'compliance_level' => 'medium',
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('clients', [
-            'name'   => 'Empresa Test SA de CV',
+            'name' => 'Empresa Test SA de CV',
             'tax_id' => 'ETE900101AAA',
         ]);
     }
@@ -80,7 +75,7 @@ class ClientResourceTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(CreateClient::class)
             ->fillForm([
-                'name'   => '',
+                'name' => '',
                 'tax_id' => '',
             ])
             ->call('create')
@@ -89,7 +84,7 @@ class ClientResourceTest extends TestCase
 
     public function test_edit_client_page_loads(): void
     {
-        $client = Client::factory()->for($this->firm)->create();
+        $client = Client::factory()->create();
 
         $this->actingAs($this->admin)
             ->get(ClientResource::getUrl('edit', ['record' => $client]))
@@ -98,27 +93,27 @@ class ClientResourceTest extends TestCase
 
     public function test_can_edit_client(): void
     {
-        $client = Client::factory()->for($this->firm)->create();
+        $client = Client::factory()->create();
 
         Livewire::actingAs($this->admin)
             ->test(EditClient::class, ['record' => $client->getRouteKey()])
             ->fillForm([
-                'name'   => 'Nombre Actualizado SA de CV',
+                'name' => 'Nombre Actualizado SA de CV',
                 'status' => 'inactive',
             ])
             ->call('save')
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseHas('clients', [
-            'id'     => $client->id,
-            'name'   => 'Nombre Actualizado SA de CV',
+            'id' => $client->id,
+            'name' => 'Nombre Actualizado SA de CV',
             'status' => 'inactive',
         ]);
     }
 
     public function test_can_delete_client(): void
     {
-        $client = Client::factory()->for($this->firm)->create();
+        $client = Client::factory()->create();
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)
@@ -129,8 +124,8 @@ class ClientResourceTest extends TestCase
 
     public function test_table_has_status_filter(): void
     {
-        $active = Client::factory()->for($this->firm)->create(['status' => 'active']);
-        $inactive = Client::factory()->for($this->firm)->create(['status' => 'inactive']);
+        $active = Client::factory()->create(['status' => 'active']);
+        $inactive = Client::factory()->create(['status' => 'inactive']);
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)

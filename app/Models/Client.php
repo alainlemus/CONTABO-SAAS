@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
@@ -13,7 +12,6 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'firm_id',
         'name',
         'tax_id',
         'person_type',
@@ -52,18 +50,8 @@ class Client extends Model
         'employee_count' => 'integer',
     ];
 
-    public function firm(): BelongsTo
-    {
-        return $this->belongsTo(Firm::class);
-    }
-
     public function notes(): HasMany
     {
         return $this->hasMany(ClientNote::class)->latest();
-    }
-
-    public function accounts(): HasMany
-    {
-        return $this->hasMany(Account::class);
     }
 }

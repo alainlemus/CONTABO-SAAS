@@ -5,8 +5,6 @@ namespace App\Filament\Resources\Clients\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -31,49 +29,44 @@ class ClientsTable
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'fisica' => 'info',
-                        'moral'  => 'primary',
-                        default  => 'gray',
+                        'moral' => 'primary',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'fisica' => 'Física',
-                        'moral'  => 'Moral',
-                        default  => $state,
+                        'moral' => 'Moral',
+                        default => $state,
                     }),
                 TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'active'     => 'success',
-                        'inactive'   => 'danger',
+                        'active' => 'success',
+                        'inactive' => 'danger',
                         'onboarding' => 'warning',
-                        default      => 'gray',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active'     => 'Activo',
-                        'inactive'   => 'Inactivo',
+                        'active' => 'Activo',
+                        'inactive' => 'Inactivo',
                         'onboarding' => 'En alta',
-                        default      => $state,
+                        default => $state,
                     }),
                 TextColumn::make('compliance_level')
                     ->label('Cumplimiento')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'high'   => 'success',
+                        'high' => 'success',
                         'medium' => 'warning',
-                        'low'    => 'danger',
-                        default  => 'gray',
+                        'low' => 'danger',
+                        default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'high'   => 'Alto',
+                        'high' => 'Alto',
                         'medium' => 'Medio',
-                        'low'    => 'Bajo',
-                        default  => $state,
+                        'low' => 'Bajo',
+                        default => $state,
                     }),
-                TextColumn::make('firm.name')
-                    ->label('Despacho')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('email')
                     ->label('Correo')
                     ->searchable()
@@ -81,10 +74,10 @@ class ClientsTable
                 TextColumn::make('billing_cycle')
                     ->label('Facturación')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'monthly'   => 'Mensual',
+                        'monthly' => 'Mensual',
                         'quarterly' => 'Trimestral',
-                        'annual'    => 'Anual',
-                        default     => $state,
+                        'annual' => 'Anual',
+                        default => $state,
                     })
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('relationship_started_at')
@@ -102,29 +95,29 @@ class ClientsTable
                 SelectFilter::make('status')
                     ->label('Estatus')
                     ->options([
-                        'active'     => 'Activo',
-                        'inactive'   => 'Inactivo',
+                        'active' => 'Activo',
+                        'inactive' => 'Inactivo',
                         'onboarding' => 'En alta',
                     ]),
                 SelectFilter::make('person_type')
                     ->label('Tipo de persona')
                     ->options([
                         'fisica' => 'Persona Física',
-                        'moral'  => 'Persona Moral',
+                        'moral' => 'Persona Moral',
                     ]),
                 SelectFilter::make('compliance_level')
                     ->label('Cumplimiento')
                     ->options([
-                        'high'   => 'Alto',
+                        'high' => 'Alto',
                         'medium' => 'Medio',
-                        'low'    => 'Bajo',
+                        'low' => 'Bajo',
                     ]),
                 SelectFilter::make('billing_cycle')
                     ->label('Ciclo de facturación')
                     ->options([
-                        'monthly'   => 'Mensual',
+                        'monthly' => 'Mensual',
                         'quarterly' => 'Trimestral',
-                        'annual'    => 'Anual',
+                        'annual' => 'Anual',
                     ]),
             ])
             ->recordActions([
