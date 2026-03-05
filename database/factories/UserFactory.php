@@ -33,6 +33,7 @@ class UserFactory extends Factory
             'role' => UserRole::Admin,
             'owner_id' => null,
             'is_active' => true,
+            'trial_ends_at' => now()->addDays(14),
         ];
     }
 

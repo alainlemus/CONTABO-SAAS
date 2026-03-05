@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class SubscriptionController extends Controller
+{
+    /** Página principal de suscripción — muestra el plan y el botón de checkout. */
+    public function index(): View|RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $owner = $user->isAdmin() ? $user : User::find($user->owner_id);
+
+        // Si ya tiene acceso, redirigir al panel
+        if ($owner && ($owner->onTrial() || $owner->subscribed('default'))) {
+            return redirect('/admin');
+        }
+
+        return view('subscription.index', [
+            'onTrial' => $owner?->onTrial() ?? false,
+            'trialEndsAt' => $owner?->trialEndsAt(),
+            'subscribed' => $owner?->subscribed('default') ?? false,
+        ]);
+    }
+
+    /** Inicia una sesión de Stripe Checkout y redirige al usuario. */
+    public function checkout(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $owner = $user->isAdmin() ? $user : User::find($user->owner_id);
+
+        if (! $owner) {
+            return redirect()->route('subscription.index');
+        }
+
+        $priceId = config('services.stripe.price_id');
+
+        $checkout = $owner
+            ->newSubscription('default', $priceId)
+            ->allowPromotionCodes()
+            ->checkout([
+                'success_url' => route('subscription.success').'?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('subscription.cancel'),
+            ]);
+
+        return redirect($checkout->url);
+    }
+
+    /** Página de éxito post-checkout. */
+    public function success(): View
+    {
+        return view('subscription.success');
+    }
+
+    /** Página de cancelación de checkout. */
+    public function cancel(): View
+    {
+        return view('subscription.cancel');
+    }
+
+    /** Redirige al portal de Stripe para gestionar la suscripción. */
+    public function portal(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+        $owner = $user->isAdmin() ? $user : User::find($user->owner_id);
+
+        if (! $owner) {
+            return redirect()->route('subscription.index');
+        }
+
+        return $owner->redirectToBillingPortal(route('subscription.index'));
+    }
+}

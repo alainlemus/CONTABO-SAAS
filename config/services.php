@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'stripe' => [
+        'price_id' => env('STRIPE_PRICE_ID'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
