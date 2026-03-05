@@ -137,4 +137,160 @@ class ClientResourceTest extends TestCase
             ->assertCanSeeTableRecords([$active])
             ->assertCanNotSeeTableRecords([$inactive]);
     }
+
+    // ─── Visibilidad de acciones CER / KEY en tabla ───────────────────────────
+
+    public function test_table_download_cer_action_visible_for_admin_when_path_exists(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => 'clients/efirma/test.cer',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableActionVisible('download_cer', $client);
+    }
+
+    public function test_table_download_cer_action_hidden_when_path_is_null(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableActionHidden('download_cer', $client);
+    }
+
+    public function test_table_download_cer_action_hidden_for_capturista(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => 'clients/efirma/test.cer',
+        ]);
+
+        $capturista = User::factory()->capturista()->create(['owner_id' => $this->admin->id]);
+
+        Livewire::actingAs($capturista)
+            ->test(ListClients::class)
+            ->assertTableActionHidden('download_cer', $client);
+    }
+
+    public function test_table_download_key_action_visible_for_admin_when_path_exists(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => 'clients/efirma/test.key',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableActionVisible('download_key', $client);
+    }
+
+    public function test_table_download_key_action_hidden_when_path_is_null(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableActionHidden('download_key', $client);
+    }
+
+    public function test_table_download_key_action_hidden_for_capturista(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => 'clients/efirma/test.key',
+        ]);
+
+        $capturista = User::factory()->capturista()->create(['owner_id' => $this->admin->id]);
+
+        Livewire::actingAs($capturista)
+            ->test(ListClients::class)
+            ->assertTableActionHidden('download_key', $client);
+    }
+
+    // ─── Visibilidad de acciones CER / KEY en EditClient ─────────────────────
+
+    public function test_edit_page_download_cer_action_visible_for_admin_when_path_exists(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => 'clients/efirma/test.cer',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionVisible('download_cer');
+    }
+
+    public function test_edit_page_download_cer_action_hidden_when_path_is_null(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionHidden('download_cer');
+    }
+
+    public function test_edit_page_download_cer_action_hidden_for_capturista(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_cer_path' => 'clients/efirma/test.cer',
+        ]);
+
+        $capturista = User::factory()->capturista()->create(['owner_id' => $this->admin->id]);
+
+        Livewire::actingAs($capturista)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionHidden('download_cer');
+    }
+
+    public function test_edit_page_download_key_action_visible_for_admin_when_path_exists(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => 'clients/efirma/test.key',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionVisible('download_key');
+    }
+
+    public function test_edit_page_download_key_action_hidden_when_path_is_null(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionHidden('download_key');
+    }
+
+    public function test_edit_page_download_key_action_hidden_for_capturista(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'efirma_key_path' => 'clients/efirma/test.key',
+        ]);
+
+        $capturista = User::factory()->capturista()->create(['owner_id' => $this->admin->id]);
+
+        Livewire::actingAs($capturista)
+            ->test(EditClient::class, ['record' => $client->getRouteKey()])
+            ->assertActionHidden('download_key');
+    }
 }

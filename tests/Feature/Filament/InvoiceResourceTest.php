@@ -138,4 +138,100 @@ class InvoiceResourceTest extends TestCase
             ->assertCanSeeTableRecords([$ingreso])
             ->assertCanNotSeeTableRecords([$gasto]);
     }
+
+    public function test_download_xml_action_visible_when_xml_path_exists(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'xml_path' => 'invoices/xml/test.xml',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListInvoices::class)
+            ->assertTableActionVisible('download_xml', $invoice);
+    }
+
+    public function test_download_xml_action_hidden_when_xml_path_is_null(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'xml_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListInvoices::class)
+            ->assertTableActionHidden('download_xml', $invoice);
+    }
+
+    public function test_download_pdf_action_visible_when_pdf_path_exists(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'pdf_path' => 'invoices/pdf/test.pdf',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListInvoices::class)
+            ->assertTableActionVisible('download_pdf', $invoice);
+    }
+
+    public function test_download_pdf_action_hidden_when_pdf_path_is_null(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'pdf_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListInvoices::class)
+            ->assertTableActionHidden('download_pdf', $invoice);
+    }
+
+    public function test_edit_page_shows_download_xml_action_when_xml_path_exists(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'xml_path' => 'invoices/xml/test.xml',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditInvoice::class, ['record' => $invoice->getRouteKey()])
+            ->assertActionVisible('download_xml');
+    }
+
+    public function test_edit_page_hides_download_xml_action_when_xml_path_is_null(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'xml_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditInvoice::class, ['record' => $invoice->getRouteKey()])
+            ->assertActionHidden('download_xml');
+    }
+
+    public function test_edit_page_shows_download_pdf_action_when_pdf_path_exists(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'pdf_path' => 'invoices/pdf/test.pdf',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditInvoice::class, ['record' => $invoice->getRouteKey()])
+            ->assertActionVisible('download_pdf');
+    }
+
+    public function test_edit_page_hides_download_pdf_action_when_pdf_path_is_null(): void
+    {
+        $invoice = Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'pdf_path' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(EditInvoice::class, ['record' => $invoice->getRouteKey()])
+            ->assertActionHidden('download_pdf');
+    }
 }

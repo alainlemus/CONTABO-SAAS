@@ -27,6 +27,11 @@ class ClientPolicy
         return $user->role->canEdit() && $client->user_id === $user->ownerId();
     }
 
+    public function downloadCertificate(User $user, Client $client): bool
+    {
+        return $user->isAdmin() && $client->user_id === $user->ownerId();
+    }
+
     public function delete(User $user, Client $client): bool
     {
         return $user->role->canDelete() && $client->user_id === $user->ownerId();

@@ -2,8 +2,12 @@
 
 namespace App\Filament\Resources\Invoices\Tables;
 
+use App\Models\Invoice;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -93,6 +97,26 @@ class InvoicesTable
                         'error' => 'Error',
                         default => $state,
                     }),
+
+                IconColumn::make('xml_path')
+                    ->label('XML')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-document-text')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('info')
+                    ->falseColor('gray')
+                    ->state(fn (Invoice $record): bool => (bool) $record->xml_path)
+                    ->toggleable(),
+
+                IconColumn::make('pdf_path')
+                    ->label('PDF')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-document')
+                    ->falseIcon('heroicon-o-minus')
+                    ->trueColor('danger')
+                    ->falseColor('gray')
+                    ->state(fn (Invoice $record): bool => (bool) $record->pdf_path)
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('type')
@@ -117,6 +141,25 @@ class InvoicesTable
                     ->preload(),
             ])
             ->defaultSort('fecha_emision', 'desc')
+            ->actions([
+                ActionGroup::make([
+                    Action::make('download_xml')
+                        ->label('Descargar XML')
+                        ->icon('heroicon-o-document-text')
+                        ->color('info')
+                        ->url(fn (Invoice $record): string => route('invoices.download.xml', $record))
+                        ->openUrlInNewTab()
+                        ->visible(fn (Invoice $record): bool => (bool) $record->xml_path),
+
+                    Action::make('download_pdf')
+                        ->label('Descargar PDF')
+                        ->icon('heroicon-o-document')
+                        ->color('danger')
+                        ->url(fn (Invoice $record): string => route('invoices.download.pdf', $record))
+                        ->openUrlInNewTab()
+                        ->visible(fn (Invoice $record): bool => (bool) $record->pdf_path),
+                ])->icon('heroicon-m-ellipsis-vertical'),
+            ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

@@ -80,4 +80,9 @@ class Client extends Model
     {
         return $this->hasMany(Invoice::class)->latest('fecha_emision');
     }
+
+    public function fiscalObligations(): HasMany
+    {
+        return $this->hasMany(FiscalObligation::class)->latest('due_date');
+    }
 }

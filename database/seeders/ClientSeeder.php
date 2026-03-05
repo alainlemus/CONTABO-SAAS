@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ClientSeeder extends Seeder
 {
     public function run(): void
     {
+        $admin = User::where('email', 'test@example.com')->firstOrFail();
+
         $clients = [
             [
                 'person_type' => 'moral',
@@ -343,7 +346,7 @@ class ClientSeeder extends Seeder
         ];
 
         foreach ($clients as $data) {
-            Client::create($data);
+            Client::create(array_merge($data, ['user_id' => $admin->id]));
         }
     }
 }
