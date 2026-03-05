@@ -26,7 +26,7 @@ class InvoiceResourceTest extends TestCase
         parent::setUp();
 
         $this->admin = User::factory()->create();
-        $this->client = Client::factory()->create();
+        $this->client = Client::factory()->create(['user_id' => $this->admin->id]);
     }
 
     public function test_list_invoices_page_loads(): void

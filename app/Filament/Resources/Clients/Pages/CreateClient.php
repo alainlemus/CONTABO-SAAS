@@ -36,4 +36,12 @@ class CreateClient extends CreateRecord
                     ->contained(false),
             ]);
     }
+
+    /** @param array<string, mixed> $data */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['user_id'] = auth()->user()->ownerId();
+
+        return $data;
+    }
 }

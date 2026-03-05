@@ -32,13 +32,16 @@ class ClientResourceTest extends TestCase
             ->assertSuccessful();
     }
 
-    public function test_list_clients_shows_clients(): void
+    public function test_list_clients_shows_only_own_clients(): void
     {
-        $clients = Client::factory()->count(3)->create();
+        $ownClients = Client::factory()->count(3)->create(['user_id' => $this->admin->id]);
+        $otherAdmin = User::factory()->create();
+        $otherClients = Client::factory()->count(2)->create(['user_id' => $otherAdmin->id]);
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)
-            ->assertCanSeeTableRecords($clients);
+            ->assertCanSeeTableRecords($ownClients)
+            ->assertCanNotSeeTableRecords($otherClients);
     }
 
     public function test_create_client_page_loads(): void
@@ -67,6 +70,7 @@ class ClientResourceTest extends TestCase
         $this->assertDatabaseHas('clients', [
             'name' => 'Empresa Test SA de CV',
             'tax_id' => 'ETE900101AAA',
+            'user_id' => $this->admin->id,
         ]);
     }
 
@@ -84,7 +88,7 @@ class ClientResourceTest extends TestCase
 
     public function test_edit_client_page_loads(): void
     {
-        $client = Client::factory()->create();
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
 
         $this->actingAs($this->admin)
             ->get(ClientResource::getUrl('edit', ['record' => $client]))
@@ -93,7 +97,7 @@ class ClientResourceTest extends TestCase
 
     public function test_can_edit_client(): void
     {
-        $client = Client::factory()->create();
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
 
         Livewire::actingAs($this->admin)
             ->test(EditClient::class, ['record' => $client->getRouteKey()])
@@ -113,7 +117,7 @@ class ClientResourceTest extends TestCase
 
     public function test_can_delete_client(): void
     {
-        $client = Client::factory()->create();
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)
@@ -124,8 +128,8 @@ class ClientResourceTest extends TestCase
 
     public function test_table_has_status_filter(): void
     {
-        $active = Client::factory()->create(['status' => 'active']);
-        $inactive = Client::factory()->create(['status' => 'inactive']);
+        $active = Client::factory()->create(['user_id' => $this->admin->id, 'status' => 'active']);
+        $inactive = Client::factory()->create(['user_id' => $this->admin->id, 'status' => 'inactive']);
 
         Livewire::actingAs($this->admin)
             ->test(ListClients::class)

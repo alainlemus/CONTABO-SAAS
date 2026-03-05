@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class ClientFactory extends Factory
         $personType = fake()->randomElement(['fisica', 'moral']);
 
         return [
+            'user_id' => User::factory(),
             'name' => fake()->company(),
             'tax_id' => 'C'.fake()->unique()->numerify('###########'),
             'person_type' => $personType,

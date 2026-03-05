@@ -33,7 +33,7 @@ class ImportarXmlAction extends Action
             ->form([
                 Select::make('client_id')
                     ->label('Cliente')
-                    ->options(Client::query()->orderBy('name')->pluck('name', 'id'))
+                    ->options(fn () => Client::query()->orderBy('name')->pluck('name', 'id'))
                     ->searchable()
                     ->required(),
 

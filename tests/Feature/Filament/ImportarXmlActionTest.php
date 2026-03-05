@@ -27,7 +27,7 @@ class ImportarXmlActionTest extends TestCase
         Storage::fake('local');
 
         $this->admin = User::factory()->create();
-        $this->client = Client::factory()->create();
+        $this->client = Client::factory()->create(['user_id' => $this->admin->id]);
     }
 
     private function cfdiXml(string $rfcEmisor = 'ETE900101AAA', string $rfcReceptor = 'XAXX010101000', string $uuid = '6128e9b2-1234-5678-abcd-ef0123456789'): string

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
@@ -12,6 +14,7 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'tax_id',
         'person_type',
@@ -49,6 +52,24 @@ class Client extends Model
         'documents' => 'array',
         'employee_count' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('owned', function (Builder $query): void {
+            if (! auth()->check()) {
+                return;
+            }
+
+            $query->where('user_id', auth()->user()->ownerId());
+        });
+    }
+
+    // ─── Relaciones ───────────────────────────────────────────────────────────
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function notes(): HasMany
     {
