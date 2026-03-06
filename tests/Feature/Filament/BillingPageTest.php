@@ -189,4 +189,50 @@ class BillingPageTest extends TestCase
             ->call('resumeSubscription')
             ->assertSuccessful();
     }
+
+    public function test_start_checkout_shows_warning_when_stripe_not_configured(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Stripe no configurado en el entorno de tests — debe enviar notificación de warning y no crashear
+        Livewire::test(BillingPage::class)
+            ->call('startCheckout')
+            ->assertSuccessful();
+    }
+
+    public function test_start_checkout_returns_null_when_stripe_not_configured(): void
+    {
+        $this->actingAs($this->admin);
+
+        $component = Livewire::test(BillingPage::class);
+        $instance = $component->instance();
+
+        // Con keys de placeholder, isStripeConfigured() retorna false → startCheckout() retorna null
+        $result = $instance->startCheckout();
+
+        $this->assertNull($result);
+    }
+
+    public function test_open_portal_shows_warning_when_stripe_not_configured(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Stripe no configurado en tests — debe notificar y no crashear
+        Livewire::test(BillingPage::class)
+            ->call('openPortal')
+            ->assertSuccessful();
+    }
+
+    public function test_open_portal_returns_null_when_stripe_not_configured(): void
+    {
+        $this->actingAs($this->admin);
+
+        $component = Livewire::test(BillingPage::class);
+        $instance = $component->instance();
+
+        // Con keys de placeholder, isStripeConfigured() retorna false → openPortal() retorna null
+        $result = $instance->openPortal();
+
+        $this->assertNull($result);
+    }
 }

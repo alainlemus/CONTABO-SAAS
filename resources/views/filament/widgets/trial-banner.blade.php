@@ -14,8 +14,7 @@
 >
     <x-slot name="footer">
         <x-filament::button
-            tag="a"
-            href="/subscription"
+            wire:click="startCheckout"
             color="warning"
             size="sm"
         >

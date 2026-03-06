@@ -73,12 +73,13 @@
                 <div class="flex flex-col gap-2 sm:flex-row">
                     @if($status === 'trial' || $status === 'none' || $status === 'canceled')
                         @if($isStripeConfigured)
-                            <form method="POST" action="{{ route('subscription.checkout') }}">
-                                @csrf
-                                <x-filament::button type="submit" color="primary" icon="heroicon-o-credit-card">
-                                    Activar suscripción
-                                </x-filament::button>
-                            </form>
+                            <x-filament::button
+                                wire:click="startCheckout"
+                                color="primary"
+                                icon="heroicon-o-credit-card"
+                            >
+                                Activar suscripción
+                            </x-filament::button>
                         @endif
 
                     @elseif($status === 'active')
@@ -131,24 +132,26 @@
                             </div>
                         </div>
 
-                        <form method="POST" action="{{ route('subscription.portal') }}">
-                            @csrf
-                            <x-filament::button type="submit" color="gray" icon="heroicon-o-pencil-square">
-                                Actualizar tarjeta
-                            </x-filament::button>
-                        </form>
+                        <x-filament::button
+                            wire:click="openPortal"
+                            color="gray"
+                            icon="heroicon-o-pencil-square"
+                        >
+                            Actualizar tarjeta
+                        </x-filament::button>
                     </div>
                 @else
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             No hay método de pago registrado.
                         </p>
-                        <form method="POST" action="{{ route('subscription.portal') }}">
-                            @csrf
-                            <x-filament::button type="submit" color="gray" icon="heroicon-o-plus">
-                                Agregar tarjeta
-                            </x-filament::button>
-                        </form>
+                        <x-filament::button
+                            wire:click="openPortal"
+                            color="gray"
+                            icon="heroicon-o-plus"
+                        >
+                            Agregar tarjeta
+                        </x-filament::button>
                     </div>
                 @endif
             </x-filament::section>

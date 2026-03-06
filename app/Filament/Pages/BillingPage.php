@@ -51,6 +51,84 @@ class BillingPage extends Page
     }
 
     /**
+     * Redirect to Stripe Checkout to start a new subscription.
+     */
+    public function startCheckout(): mixed
+    {
+        $owner = $this->getOwner();
+
+        if (! $this->isStripeConfigured()) {
+            Notification::make()
+                ->title('Stripe no configurado')
+                ->body('Esta función no está disponible en el entorno actual.')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        $priceId = config('services.stripe.price_id');
+
+        try {
+            $checkout = $owner
+                ->newSubscription('default', $priceId)
+                ->allowPromotionCodes()
+                ->checkout([
+                    'success_url' => route('subscription.success').'?session_id={CHECKOUT_SESSION_ID}',
+                    'cancel_url' => route('subscription.cancel'),
+                ]);
+
+            return redirect($checkout->url);
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error al iniciar el pago')
+                ->body('No se pudo iniciar el proceso de suscripción. Por favor intenta de nuevo.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+    }
+
+    /**
+     * Redirect to the Stripe Billing Portal to manage payment methods.
+     */
+    public function openPortal(): mixed
+    {
+        $owner = $this->getOwner();
+
+        if (! $this->isStripeConfigured()) {
+            Notification::make()
+                ->title('Stripe no configurado')
+                ->body('Esta función no está disponible en el entorno actual.')
+                ->warning()
+                ->send();
+
+            return null;
+        }
+
+        try {
+            $portalUrl = $owner->billingPortalUrl(route('filament.admin.pages.billing-page'));
+
+            return redirect($portalUrl);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Stripe billing portal error', [
+                'message' => $e->getMessage(),
+                'user_id' => $owner->id,
+                'stripe_id' => $owner->stripe_id,
+            ]);
+
+            Notification::make()
+                ->title('Error al abrir el portal')
+                ->body('No se pudo acceder al portal de facturación. Por favor intenta de nuevo.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+    }
+
+    /**
      * Cancel the active subscription (with grace period).
      */
     public function cancelSubscription(): void
