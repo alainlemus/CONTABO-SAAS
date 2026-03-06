@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\ObligationStatus;
+use App\Filament\Pages\Dashboard;
 use App\Models\FiscalObligation;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
@@ -13,8 +14,13 @@ class ObligacionesPorEstatusChartWidget extends ChartWidget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 1;
+
     protected function getData(): array
     {
+        $ownerId = auth()->user()->ownerId();
+        $clientId = Dashboard::getActiveClientId();
+
         $months = collect(range(5, 0))->map(function (int $monthsAgo): Carbon {
             return Carbon::now()->subMonths($monthsAgo)->startOfMonth();
         });
@@ -33,12 +39,16 @@ class ObligacionesPorEstatusChartWidget extends ChartWidget
             ObligationStatus::NotApplicable->value => 'rgba(156, 163, 175, 0.8)',
         ];
 
-        $datasets = collect($statuses)->map(function (ObligationStatus $status) use ($months, $colors): array {
+        $datasets = collect($statuses)->map(function (ObligationStatus $status) use ($months, $colors, $ownerId, $clientId): array {
             $dateColumn = $status === ObligationStatus::Presented ? 'presented_at' : 'due_date';
 
-            $data = $months->map(function (Carbon $month) use ($status, $dateColumn): int {
+            $data = $months->map(function (Carbon $month) use ($status, $dateColumn, $ownerId, $clientId): int {
                 return FiscalObligation::query()
                     ->where('status', $status)
+                    ->when($clientId,
+                        fn ($q) => $q->where('client_id', $clientId),
+                        fn ($q) => $q->whereHas('client', fn ($c) => $c->where('user_id', $ownerId))
+                    )
                     ->whereYear($dateColumn, $month->year)
                     ->whereMonth($dateColumn, $month->month)
                     ->count();

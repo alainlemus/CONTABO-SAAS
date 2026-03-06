@@ -103,12 +103,27 @@
             font-size: .9rem;
             margin-bottom: 1.5rem;
         }
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            border-radius: .5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: .9rem;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="logo">ContaboSaaS</div>
+
+            @if(session('error'))
+                <div class="alert-error">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             @if(! $onTrial && ! $subscribed)
                 <h1>Tu período de prueba ha terminado</h1>

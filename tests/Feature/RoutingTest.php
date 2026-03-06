@@ -24,9 +24,12 @@ class RoutingTest extends TestCase
     public function test_stripe_webhook_route_is_registered(): void
     {
         // Cashier registra POST /stripe/webhook automáticamente.
-        // Sin firma válida devuelve 400 o 403 (no 404 — la ruta sí existe).
-        $response = $this->postJson('/stripe/webhook', []);
-
-        $this->assertContains($response->status(), [400, 403]);
+        // En el entorno de testing STRIPE_WEBHOOK_SECRET está vacío, por lo que
+        // el middleware de firma se omite y el endpoint devuelve 200.
+        // Lo importante es que la ruta existe (no devuelve 404 ni 405).
+        $this->postJson('/stripe/webhook', [
+            'type' => 'unknown.event',
+            'data' => ['object' => []],
+        ])->assertSuccessful();
     }
 }

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class FiscalObligationResource extends Resource
 {
@@ -27,6 +28,28 @@ class FiscalObligationResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Cartera';
 
     protected static ?int $navigationSort = 3;
+
+    public static function getRecordTitle(?Model $record): ?string
+    {
+        if (! $record instanceof FiscalObligation) {
+            return null;
+        }
+
+        return $record->type->label();
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['client.name'];
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return [
+            'Cliente' => $record->client?->name ?? '—',
+            'Período' => $record->periodLabel(),
+        ];
+    }
 
     public static function form(Schema $schema): Schema
     {

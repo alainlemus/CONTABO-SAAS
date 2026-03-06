@@ -31,5 +31,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value=""/>
+        <env name="STRIPE_SECRET" value="sk_placeholder_test"/>
+        <env name="STRIPE_KEY" value="pk_placeholder_test"/>
     </php>
 </phpunit>

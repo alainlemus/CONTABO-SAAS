@@ -4,6 +4,8 @@ namespace App\Filament\Resources\FiscalObligations\Tables;
 
 use App\Enums\ObligationStatus;
 use App\Enums\ObligationType;
+use App\Filament\Exports\FiscalObligationExporter;
+use App\Mail\ObligationPresentedMail;
 use App\Models\Client;
 use App\Models\FiscalObligation;
 use App\Services\FiscalObligationGenerator;
@@ -11,6 +13,8 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -18,6 +22,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class FiscalObligationsTable
@@ -140,13 +145,26 @@ class FiscalObligationsTable
                             'reference' => $data['reference'] ?? null,
                             'acuse_pdf_path' => $data['acuse_pdf_path'] ?? $record->acuse_pdf_path,
                         ]);
+
+                        // Notificar al cliente por correo si tiene email registrado
+                        $client = $record->client;
+
+                        if ($client && $client->email) {
+                            Mail::to($client->email)->queue(new ObligationPresentedMail($record));
+                        }
                     }),
-
-
 
                 EditAction::make(),
             ])
             ->toolbarActions([
+                ExportAction::make()
+                    ->label('Exportar')
+                    ->exporter(FiscalObligationExporter::class)
+                    ->formats([
+                        ExportFormat::Xlsx,
+                        ExportFormat::Csv,
+                    ]),
+
                 // Acción de header: generar obligaciones del mes actual para todos los clientes
                 Action::make('generate_current_month')
                     ->label('Generar obligaciones del mes')

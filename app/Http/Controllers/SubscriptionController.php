@@ -39,17 +39,29 @@ class SubscriptionController extends Controller
             return redirect()->route('subscription.index');
         }
 
+        // Detectar llaves placeholder (entorno sin Stripe real configurado)
+        $stripeSecret = config('cashier.secret');
+        if (! $stripeSecret || str_contains((string) $stripeSecret, 'placeholder')) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Stripe no está configurado en este entorno. Contacta al administrador.');
+        }
+
         $priceId = config('services.stripe.price_id');
 
-        $checkout = $owner
-            ->newSubscription('default', $priceId)
-            ->allowPromotionCodes()
-            ->checkout([
-                'success_url' => route('subscription.success').'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('subscription.cancel'),
-            ]);
+        try {
+            $checkout = $owner
+                ->newSubscription('default', $priceId)
+                ->allowPromotionCodes()
+                ->checkout([
+                    'success_url' => route('subscription.success').'?session_id={CHECKOUT_SESSION_ID}',
+                    'cancel_url' => route('subscription.cancel'),
+                ]);
 
-        return redirect($checkout->url);
+            return redirect($checkout->url);
+        } catch (\Exception $e) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'No se pudo iniciar el proceso de suscripción. Por favor intenta de nuevo o contacta al soporte.');
+        }
     }
 
     /** Página de éxito post-checkout. */
@@ -75,6 +87,11 @@ class SubscriptionController extends Controller
             return redirect()->route('subscription.index');
         }
 
-        return $owner->redirectToBillingPortal(route('subscription.index'));
+        try {
+            return $owner->redirectToBillingPortal(route('subscription.index'));
+        } catch (\Exception $e) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'No se pudo acceder al portal de facturación. Por favor intenta de nuevo.');
+        }
     }
 }

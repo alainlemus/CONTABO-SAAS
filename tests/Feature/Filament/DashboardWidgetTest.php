@@ -5,6 +5,7 @@ namespace Tests\Feature\Filament;
 use App\Enums\ObligationStatus;
 use App\Enums\ObligationType;
 use App\Filament\Widgets\DashboardStatsWidget;
+use App\Filament\Widgets\IngresosEgresosChartWidget;
 use App\Filament\Widgets\ObligacionesPorEstatusChartWidget;
 use App\Filament\Widgets\ProximasObligacionesWidget;
 use App\Models\Client;
@@ -387,5 +388,207 @@ class DashboardWidgetTest extends TestCase
         // Verificar que la query del widget limita a 10 registros
         $records = $widget->instance()->getTableRecords();
         $this->assertCount(10, $records);
+    }
+
+    // ─── IngresosEgresosChartWidget ───────────────────────────────────────────
+
+    public function test_ingresos_egresos_chart_widget_renders(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(IngresosEgresosChartWidget::class)
+            ->assertSuccessful();
+    }
+
+    public function test_ingresos_egresos_chart_widget_returns_six_months(): void
+    {
+        $this->actingAs($this->admin);
+
+        $component = Livewire::test(IngresosEgresosChartWidget::class);
+        $component->assertSuccessful();
+
+        $widget = $component->instance();
+        $getData = (new \ReflectionMethod($widget, 'getData'))->getClosure($widget);
+        $data = $getData();
+
+        $this->assertCount(6, $data['labels']);
+        $this->assertCount(2, $data['datasets']);
+        $this->assertEquals('Ingresos', $data['datasets'][0]['label']);
+        $this->assertEquals('Egresos', $data['datasets'][1]['label']);
+    }
+
+    public function test_ingresos_egresos_chart_sums_invoices_correctly(): void
+    {
+        Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'type' => 'ingreso',
+            'fecha_emision' => now()->startOfMonth(),
+            'total' => '1000.00',
+        ]);
+
+        Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'type' => 'gasto',
+            'fecha_emision' => now()->startOfMonth(),
+            'total' => '400.00',
+        ]);
+
+        $this->actingAs($this->admin);
+
+        $widget = Livewire::test(IngresosEgresosChartWidget::class)->instance();
+        $getData = (new \ReflectionMethod($widget, 'getData'))->getClosure($widget);
+        $data = $getData();
+
+        // El último elemento de cada dataset corresponde al mes actual
+        $lastIndex = 5;
+        $this->assertEquals(1000.0, $data['datasets'][0]['data'][$lastIndex]);
+        $this->assertEquals(400.0, $data['datasets'][1]['data'][$lastIndex]);
+    }
+
+    public function test_ingresos_egresos_chart_scoped_to_admin(): void
+    {
+        // Facturas del admin
+        Invoice::factory()->create([
+            'client_id' => $this->client->id,
+            'type' => 'ingreso',
+            'fecha_emision' => now()->startOfMonth(),
+            'total' => '500.00',
+        ]);
+
+        // Facturas de otro admin — no deben sumarse
+        $otherAdmin = User::factory()->create();
+        $otherClient = Client::factory()->create(['user_id' => $otherAdmin->id, 'status' => 'active']);
+        Invoice::factory()->create([
+            'client_id' => $otherClient->id,
+            'type' => 'ingreso',
+            'fecha_emision' => now()->startOfMonth(),
+            'total' => '9999.00',
+        ]);
+
+        $this->actingAs($this->admin);
+
+        $widget = Livewire::test(IngresosEgresosChartWidget::class)->instance();
+        $getData = (new \ReflectionMethod($widget, 'getData'))->getClosure($widget);
+        $data = $getData();
+
+        $lastIndex = 5;
+        $this->assertEquals(500.0, $data['datasets'][0]['data'][$lastIndex]);
+    }
+
+    // ─── Filtro por cliente (Dashboard::getActiveClientId) ────────────────────
+
+    /**
+     * Escribe el filtro en sesión exactamente como lo hace HasFiltersForm.
+     */
+    private function setDashboardClientFilter(?int $clientId): void
+    {
+        $key = md5(\App\Filament\Pages\Dashboard::class).'_filters';
+        session([$key => ['client_id' => $clientId]]);
+    }
+
+    public function test_stats_widget_filtered_by_client_id_counts_only_that_client(): void
+    {
+        // Cliente 2 del mismo admin
+        $client2 = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'status' => 'active',
+        ]);
+
+        // 3 obligaciones vencidas del cliente principal
+        FiscalObligation::factory()->count(3)->sequence(
+            ['type' => ObligationType::IsrMensual, 'period_month' => 1, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 1, 'period_year' => 2025],
+            ['type' => ObligationType::IsrMensual, 'period_month' => 2, 'period_year' => 2025],
+        )->create([
+            'client_id' => $this->client->id,
+            'status' => ObligationStatus::Overdue,
+            'due_date' => now()->subDays(5),
+        ]);
+
+        // 5 obligaciones vencidas del cliente 2 — no deben verse con el filtro activo
+        FiscalObligation::factory()->count(5)->sequence(
+            ['type' => ObligationType::IsrMensual, 'period_month' => 3, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 3, 'period_year' => 2025],
+            ['type' => ObligationType::IsrMensual, 'period_month' => 4, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 4, 'period_year' => 2025],
+            ['type' => ObligationType::IsrMensual, 'period_month' => 5, 'period_year' => 2025],
+        )->create([
+            'client_id' => $client2->id,
+            'status' => ObligationStatus::Overdue,
+            'due_date' => now()->subDays(5),
+        ]);
+
+        $this->actingAs($this->admin);
+        $this->setDashboardClientFilter($this->client->id);
+
+        // Con filtro activo solo debe ver las 3 del cliente 1
+        Livewire::test(DashboardStatsWidget::class)
+            ->assertSee('3');
+
+        // Cambiamos el filtro al cliente 2 — ahora debe ver 5
+        $this->setDashboardClientFilter($client2->id);
+
+        Livewire::test(DashboardStatsWidget::class)
+            ->assertSee('5');
+    }
+
+    public function test_chart_filtered_by_client_id_scopes_data_correctly(): void
+    {
+        $client2 = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'status' => 'active',
+        ]);
+
+        // 2 obligaciones pendientes del cliente 1
+        FiscalObligation::factory()->count(2)->sequence(
+            ['type' => ObligationType::IsrMensual, 'period_month' => 1, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 1, 'period_year' => 2025],
+        )->create([
+            'client_id' => $this->client->id,
+            'status' => ObligationStatus::Pending,
+            'due_date' => now()->startOfMonth(),
+        ]);
+
+        // 4 obligaciones pendientes del cliente 2
+        FiscalObligation::factory()->count(4)->sequence(
+            ['type' => ObligationType::IsrMensual, 'period_month' => 2, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 2, 'period_year' => 2025],
+            ['type' => ObligationType::IsrMensual, 'period_month' => 3, 'period_year' => 2025],
+            ['type' => ObligationType::IvaMensual, 'period_month' => 3, 'period_year' => 2025],
+        )->create([
+            'client_id' => $client2->id,
+            'status' => ObligationStatus::Pending,
+            'due_date' => now()->startOfMonth(),
+        ]);
+
+        $this->actingAs($this->admin);
+
+        // Con filtro en cliente 1: solo 2 obligaciones pendientes este mes
+        $this->setDashboardClientFilter($this->client->id);
+
+        $count = FiscalObligation::query()
+            ->where('client_id', $this->client->id)
+            ->where('status', ObligationStatus::Pending)
+            ->whereYear('due_date', now()->year)
+            ->whereMonth('due_date', now()->month)
+            ->count();
+
+        $this->assertEquals(2, $count);
+
+        // Con filtro en cliente 2: solo 4
+        $this->setDashboardClientFilter($client2->id);
+
+        $count2 = FiscalObligation::query()
+            ->where('client_id', $client2->id)
+            ->where('status', ObligationStatus::Pending)
+            ->whereYear('due_date', now()->year)
+            ->whereMonth('due_date', now()->month)
+            ->count();
+
+        $this->assertEquals(4, $count2);
+
+        // El widget renderiza exitosamente con el filtro
+        Livewire::test(ObligacionesPorEstatusChartWidget::class)
+            ->assertSuccessful();
     }
 }
