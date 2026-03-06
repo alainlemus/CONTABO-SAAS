@@ -12,6 +12,12 @@ class GenerateMonthlyObligationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Client::flushEventListeners();
+    }
+
     public function test_generates_obligations_for_active_clients_with_tax_regime(): void
     {
         $admin = User::factory()->create();

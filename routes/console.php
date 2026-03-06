@@ -22,3 +22,6 @@ Schedule::command('app:notify-obligations-due-soon')->dailyAt('09:00');
 
 // Genera obligaciones anuales del año anterior — corre el 1 de enero a las 02:00
 Schedule::command('app:generate-annual-obligations')->yearlyOn(1, 1, '02:00');
+
+// Envía notificaciones in-app de obligaciones vencidas o próximas a vencer — corre cada día a las 09:00
+Schedule::command('app:send-inapp-notifications')->dailyAt('09:00');

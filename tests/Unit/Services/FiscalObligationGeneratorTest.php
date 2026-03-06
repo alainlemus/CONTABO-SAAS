@@ -21,6 +21,10 @@ class FiscalObligationGeneratorTest extends TestCase
     {
         parent::setUp();
         $this->generator = new FiscalObligationGenerator;
+
+        // Los tests de este servicio crean clientes directamente para probar la lógica
+        // del generador en aislamiento. El observer se prueba por separado en ClientObserverTest.
+        Client::flushEventListeners();
     }
 
     // ─── generateForClient ────────────────────────────────────────────────────

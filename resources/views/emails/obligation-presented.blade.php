@@ -1,4 +1,4 @@
-<x-emails.layout title="Obligación fiscal presentada" header-color="#16a34a" :recipient-email="$obligation->client->user->email">
+<x-emails.layout title="Obligación fiscal presentada" header-color="#16a34a" :recipient-email="$obligation->client->owner?->email ?? ''">
     <h2>Hola, {{ $obligation->client->name }}</h2>
     <p>Tu contador ha presentado la siguiente obligación fiscal ante el SAT:</p>
 

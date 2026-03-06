@@ -48,8 +48,7 @@
     <div class="wrapper">
         <div class="header" style="background: {{ $headerColor ?? '#d97706' }};">
             <div class="logo">
-                CONTABO
-                <span>Contabilidad para despachos mexicanos</span>
+                <img src="{{ config('app.url') }}/images/contabo.png" alt="CONTABO" style="height: 40px; max-width: 180px; display: block; margin: 0 auto;">
             </div>
         </div>
 

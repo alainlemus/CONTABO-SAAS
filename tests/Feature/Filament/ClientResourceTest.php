@@ -7,6 +7,7 @@ use App\Filament\Resources\Clients\Pages\CreateClient;
 use App\Filament\Resources\Clients\Pages\EditClient;
 use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Models\Client;
+use App\Models\ClientNote;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -292,5 +293,138 @@ class ClientResourceTest extends TestCase
         Livewire::actingAs($capturista)
             ->test(EditClient::class, ['record' => $client->getRouteKey()])
             ->assertActionHidden('download_key');
+    }
+
+    // ─── Indicador de portal SAT ──────────────────────────────────────────────
+
+    public function test_client_with_portal_sat_credentials_shows_success_icon(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'portal_sat_user' => 'usuario_sat',
+            'portal_sat_password' => 'contrasena_sat',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableColumnStateSet('portal_sat_credentials', true, record: $client);
+    }
+
+    public function test_client_missing_portal_sat_user_shows_warning_icon(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'portal_sat_user' => null,
+            'portal_sat_password' => 'contrasena_sat',
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableColumnStateSet('portal_sat_credentials', false, record: $client);
+    }
+
+    public function test_client_missing_portal_sat_password_shows_warning_icon(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'portal_sat_user' => 'usuario_sat',
+            'portal_sat_password' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableColumnStateSet('portal_sat_credentials', false, record: $client);
+    }
+
+    public function test_client_missing_both_portal_sat_credentials_shows_warning_icon(): void
+    {
+        $client = Client::factory()->create([
+            'user_id' => $this->admin->id,
+            'portal_sat_user' => null,
+            'portal_sat_password' => null,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableColumnStateSet('portal_sat_credentials', false, record: $client);
+    }
+
+    // ─── Nota rápida desde listado ────────────────────────────────────────────
+
+    public function test_quick_note_action_is_visible_in_client_list(): void
+    {
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->assertTableActionExists('quick_note', record: $client);
+    }
+
+    public function test_quick_note_saves_general_note_for_client(): void
+    {
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->callTableAction('quick_note', record: $client, data: [
+                'type' => 'general',
+                'body' => 'Esta es una nota rápida de prueba.',
+            ]);
+
+        $this->assertDatabaseHas('client_notes', [
+            'client_id' => $client->id,
+            'user_id' => $this->admin->id,
+            'type' => 'general',
+            'body' => 'Esta es una nota rápida de prueba.',
+        ]);
+    }
+
+    public function test_quick_note_saves_alert_note_for_client(): void
+    {
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->callTableAction('quick_note', record: $client, data: [
+                'type' => 'alert',
+                'body' => 'Alerta importante del cliente.',
+            ]);
+
+        $this->assertDatabaseHas('client_notes', [
+            'client_id' => $client->id,
+            'type' => 'alert',
+        ]);
+    }
+
+    public function test_quick_note_requires_body(): void
+    {
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->callTableAction('quick_note', record: $client, data: [
+                'type' => 'general',
+                'body' => '',
+            ])
+            ->assertHasTableActionErrors(['body' => 'required']);
+
+        $this->assertDatabaseCount('client_notes', 0);
+    }
+
+    public function test_quick_note_is_associated_to_logged_in_user(): void
+    {
+        $client = Client::factory()->create(['user_id' => $this->admin->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListClients::class)
+            ->callTableAction('quick_note', record: $client, data: [
+                'type' => 'reminder',
+                'body' => 'Recordatorio de reunión.',
+            ]);
+
+        $note = ClientNote::first();
+
+        $this->assertSame($this->admin->id, $note->user_id);
+        $this->assertSame($client->id, $note->client_id);
     }
 }

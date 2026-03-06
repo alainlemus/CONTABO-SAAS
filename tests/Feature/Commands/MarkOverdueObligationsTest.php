@@ -14,6 +14,12 @@ class MarkOverdueObligationsTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Client::flushEventListeners();
+    }
+
     public function test_marks_pending_obligations_past_due_date_as_overdue(): void
     {
         $admin = User::factory()->create();

@@ -30,6 +30,8 @@ class FiscalObligationResourceTest extends TestCase
 
         Storage::fake('local');
 
+        Client::flushEventListeners();
+
         $this->admin = User::factory()->create();
         $this->client = Client::factory()->create([
             'user_id' => $this->admin->id,
@@ -342,5 +344,129 @@ class FiscalObligationResourceTest extends TestCase
             ->get(FiscalObligationResource::getUrl('edit', ['record' => $obligation]))
             ->assertSuccessful()
             ->assertDontSee('Descargar acuse PDF');
+    }
+
+    // ─── Bulk Actions ─────────────────────────────────────────────────────────
+
+    public function test_bulk_mark_presented_updates_pending_obligations(): void
+    {
+        $pending1 = FiscalObligation::factory()->pending()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IsrMensual,
+            'period_year' => 2025,
+            'period_month' => 1,
+        ]);
+
+        $pending2 = FiscalObligation::factory()->pending()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IvaMensual,
+            'period_year' => 2025,
+            'period_month' => 1,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListFiscalObligations::class)
+            ->callTableBulkAction('mark_presented_bulk', [$pending1, $pending2]);
+
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $pending1->id,
+            'status' => ObligationStatus::Presented->value,
+        ]);
+
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $pending2->id,
+            'status' => ObligationStatus::Presented->value,
+        ]);
+    }
+
+    public function test_bulk_mark_presented_also_works_for_overdue_obligations(): void
+    {
+        $overdue = FiscalObligation::factory()->overdue()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IsrMensual,
+            'period_year' => 2024,
+            'period_month' => 6,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListFiscalObligations::class)
+            ->callTableBulkAction('mark_presented_bulk', [$overdue]);
+
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $overdue->id,
+            'status' => ObligationStatus::Presented->value,
+        ]);
+    }
+
+    public function test_bulk_mark_presented_skips_already_presented_obligations(): void
+    {
+        $presented = FiscalObligation::factory()->presented()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IsrMensual,
+            'period_year' => 2025,
+            'period_month' => 1,
+        ]);
+
+        $originalPresentedAt = $presented->presented_at;
+
+        Livewire::actingAs($this->admin)
+            ->test(ListFiscalObligations::class)
+            ->callTableBulkAction('mark_presented_bulk', [$presented]);
+
+        // La fecha de presentación no debe cambiar (la acción filtra por pending/overdue)
+        $presented->refresh();
+        $this->assertEquals(ObligationStatus::Presented, $presented->status);
+        $this->assertEquals($originalPresentedAt->toDateTimeString(), $presented->presented_at->toDateTimeString());
+    }
+
+    public function test_bulk_mark_not_applicable_updates_pending_obligations(): void
+    {
+        $pending1 = FiscalObligation::factory()->pending()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IsrMensual,
+            'period_year' => 2025,
+            'period_month' => 2,
+        ]);
+
+        $pending2 = FiscalObligation::factory()->pending()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IvaMensual,
+            'period_year' => 2025,
+            'period_month' => 2,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListFiscalObligations::class)
+            ->callTableBulkAction('mark_not_applicable_bulk', [$pending1, $pending2]);
+
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $pending1->id,
+            'status' => ObligationStatus::NotApplicable->value,
+        ]);
+
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $pending2->id,
+            'status' => ObligationStatus::NotApplicable->value,
+        ]);
+    }
+
+    public function test_bulk_mark_not_applicable_skips_presented_obligations(): void
+    {
+        $presented = FiscalObligation::factory()->presented()->create([
+            'client_id' => $this->client->id,
+            'type' => ObligationType::IsrMensual,
+            'period_year' => 2025,
+            'period_month' => 3,
+        ]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListFiscalObligations::class)
+            ->callTableBulkAction('mark_not_applicable_bulk', [$presented]);
+
+        // Debe mantenerse como presentada, no cambiar a no aplica
+        $this->assertDatabaseHas('fiscal_obligations', [
+            'id' => $presented->id,
+            'status' => ObligationStatus::Presented->value,
+        ]);
     }
 }

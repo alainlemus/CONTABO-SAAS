@@ -10,6 +10,7 @@ use App\Models\Client;
 use App\Models\FiscalObligation;
 use App\Services\FiscalObligationGenerator;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -195,6 +196,47 @@ class FiscalObligationsTable
                     }),
 
                 BulkActionGroup::make([
+                    BulkAction::make('mark_presented_bulk')
+                        ->label('Marcar como presentadas')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Marcar obligaciones como presentadas')
+                        ->modalDescription('Se marcará la fecha de hoy como fecha de presentación. Solo se actualizarán las obligaciones pendientes o vencidas.')
+                        ->action(function (\Illuminate\Support\Collection $records): void {
+                            $records
+                                ->filter(fn (FiscalObligation $r): bool => in_array($r->status, [ObligationStatus::Pending, ObligationStatus::Overdue], true))
+                                ->each(function (FiscalObligation $record): void {
+                                    $record->update([
+                                        'status' => ObligationStatus::Presented,
+                                        'presented_at' => now(),
+                                    ]);
+
+                                    $client = $record->client;
+
+                                    if ($client && $client->email) {
+                                        Mail::to($client->email)->queue(new ObligationPresentedMail($record));
+                                    }
+                                });
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
+                    BulkAction::make('mark_not_applicable_bulk')
+                        ->label('Marcar como no aplica')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('gray')
+                        ->requiresConfirmation()
+                        ->modalHeading('Marcar obligaciones como no aplica')
+                        ->modalDescription('Las obligaciones seleccionadas se marcarán como "No aplica". Solo se actualizarán las que estén pendientes o vencidas.')
+                        ->action(function (\Illuminate\Support\Collection $records): void {
+                            $records
+                                ->filter(fn (FiscalObligation $r): bool => in_array($r->status, [ObligationStatus::Pending, ObligationStatus::Overdue], true))
+                                ->each(fn (FiscalObligation $record): bool => $record->update([
+                                    'status' => ObligationStatus::NotApplicable,
+                                ]));
+                        })
+                        ->deselectRecordsAfterCompletion(),
+
                     DeleteBulkAction::make(),
                 ]),
             ])

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear cuenta — ContaboSaaS</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -92,7 +93,7 @@
 </head>
 <body>
 <nav>
-    <a href="/" class="logo">ContaboSaaS</a>
+    <a href="/" class="logo"><img src="/images/contabo.png" alt="ContaboSaaS" style="height: 2rem; display: block;"></a>
     <span class="nav-link">¿Ya tienes cuenta? <a href="/admin/login">Iniciar sesión</a></span>
 </nav>
 

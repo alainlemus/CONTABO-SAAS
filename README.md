@@ -1,304 +1,318 @@
-# ContaboSaaS — Panel de Contabilidad para Despachos Mexicanos
+# ContaboSaaS
 
-> **README para agentes de IA.** Este documento describe el proyecto, sus decisiones de arquitectura, convenciones y estado actual. Léelo completo antes de hacer cualquier cambio.
-
----
-
-## Contexto del negocio
-
-SaaS de contabilidad dirigido a contadores independientes y pequeños despachos en México. El contador paga una suscripción mensual y desde el panel gestiona los clientes que atiende, sus facturas CFDI y sus obligaciones fiscales ante el SAT.
-
-**No existe el concepto de "firma" o "despacho" como entidad separada.** El usuario administrador ES el despacho.
+Software de contabilidad multi-tenant para despachos mexicanos. Construido con Laravel 12 + Filament v5 + Laravel Cashier (Stripe).
 
 ---
 
-## Stack técnico
+## Stack
 
-| Capa | Tecnología | Versión |
-|---|---|---|
-| Lenguaje | PHP | 8.4 |
-| Framework | Laravel | 12 |
-| Panel admin | Filament | 5.x |
-| Base de datos | MySQL | — |
-| Suscripciones | Laravel Cashier (Stripe) | ^16.3 |
-| Tests | PHPUnit | 11 |
-| Formato código | Laravel Pint | 1.x |
-| Entorno local | Laravel Herd | — |
-
-**URL local:** `https://contabo-saas-filament.test`  
-**Panel:** `https://contabo-saas-filament.test/admin`
-
-> Existe un segundo proyecto `contabo-saas` (Laravel + Livewire/Fortify) en `https://contabo-saas.test`. Está **completo y no se debe tocar**. Los errores LSP que provienen de ese proyecto son falsos positivos.
+| Capa | Tecnología |
+|---|---|
+| Backend | PHP 8.4 · Laravel 12 |
+| Panel admin | Filament v5 |
+| Frontend público | Blade puro (sin Livewire ni Vite en landing) |
+| Pagos | Laravel Cashier · Stripe |
+| Tests | PHPUnit 11 |
+| Servidor local | Laravel Herd |
+| Estilos | Tailwind (panel Filament) · CSS inline (landing/emails) |
 
 ---
 
-## Arquitectura y decisiones de diseño
+## Arquitectura multi-tenant
 
-### Multi-tenancy por scope
+El modelo de tenancy es **por usuario admin**. Cada contador que se registra es un "despacho" independiente. Sus clientes, facturas y obligaciones son solo visibles para él y su equipo.
 
-No se usa un paquete de multi-tenancy. La separación de datos se implementa con **Global Scopes de Eloquent**:
+- `User` con `role = admin` → es el dueño del despacho (el "tenant")
+- `User` con `role = capturista | viewer` → miembro del equipo, con `owner_id` apuntando al admin
+- `Client`, `FiscalObligation`, `Invoice` tienen un `GlobalScope` que filtra automáticamente por `user_id = auth()->user()->ownerId()`
 
-- `Client` → Global Scope inline en `booted()` que filtra `user_id = auth()->user()->ownerId()`
-- `FiscalObligation` → Global Scope `owned` que filtra vía `whereHas('client', fn($q) => $q->where('user_id', ...))`
-- La relación `FiscalObligation::client()` usa `->withoutGlobalScopes()` para evitar recursión
+### Roles
 
-### Roles de usuario (`App\Enums\UserRole`)
-
-| Rol | Valor | Permisos |
-|---|---|---|
-| `Admin` | `admin` | CRUD completo. Dueño de la cuenta. Paga Stripe. |
-| `Capturista` | `capturista` | Crear y editar. No puede eliminar ni gestionar equipo. |
-| `Viewer` | `viewer` | Solo lectura. |
-
-Los capturistas y viewers son creados por un admin. Tienen `owner_id` apuntando al admin que los creó. El método `User::ownerId()` devuelve `owner_id ?? id` — útil para resolver siempre al admin responsable.
-
-### Estructura de `users`
-
-```
-id, name, email, password, role (enum), owner_id (FK self), is_active,
-trial_ends_at, stripe_id, pm_type, pm_last_four,    ← columnas de Cashier
-created_at, updated_at
-```
-
----
-
-## Módulo de Suscripciones (Stripe / Cashier)
-
-### Flujo
-
-1. El admin se registra → recibe **14 días de trial gratis** (columna `trial_ends_at`).
-2. Al vencer el trial, el middleware `EnsureSubscribed` bloquea el panel y redirige a `/subscription`.
-3. Desde `/subscription` el admin inicia Stripe Checkout.
-4. Stripe redirige a `/subscription/success` tras pago exitoso.
-5. El admin puede gestionar su suscripción en el Portal de Stripe desde `/subscription/portal`.
-
-### Middleware `EnsureSubscribed` (`App\Http\Middleware\EnsureSubscribed`)
-
-- Registrado como alias `subscribed` en `bootstrap/app.php`.
-- Aplicado en `AdminPanelProvider` dentro de `->authMiddleware([])`.
-- Lógica: si el usuario no está autenticado → pasa. Si es admin → verifica `onTrial()` o `subscribed('default')`. Si es capturista/viewer → resuelve al `owner` y verifica su estado.
-- Rutas de suscripción (`/subscription/*`) **no tienen** el middleware `subscribed` — están bajo solo `auth`.
-
-### Configuración Cashier
-
-- `config/cashier.php` → `currency = mxn`, `currency_locale = es_MX`
-- `config/services.php` → `services.stripe.price_id` expone el `STRIPE_PRICE_ID`
-- Nombre de suscripción: `'default'`
-- El trial se inicia con `->trialDays(14)` al momento del checkout, no al registrarse
-
-### Variables de entorno requeridas
-
-```env
-STRIPE_KEY=pk_test_...
-STRIPE_SECRET=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_ID=price_...
-CASHIER_CURRENCY=mxn
-CASHIER_CURRENCY_LOCALE=es_MX
-```
+| Rol | Crear | Editar | Eliminar | Equipo |
+|---|---|---|---|---|
+| Admin | ✓ | ✓ | ✓ | ✓ |
+| Capturista | ✓ | ✓ | ✗ | ✗ |
+| Viewer | ✗ | ✗ | ✗ | ✗ |
 
 ---
 
 ## Modelos
 
-### `User` (`app/Models/User.php`)
-- Trait `Laravel\Cashier\Billable`
-- Cast `trial_ends_at` → `datetime` (requerido para que `onTrial()` de Cashier funcione)
-- Métodos: `isAdmin()`, `isCapturista()`, `isViewer()`, `ownerId()`
+### `User`
+- Campos: `name`, `email`, `password`, `role` (enum), `owner_id`, `is_active`, `trial_ends_at`
+- Traits: `Billable` (Cashier), `Notifiable`
+- Implements: `FilamentUser`
 - Relaciones: `owner()`, `teamMembers()`, `clients()`
 
-### `Client` (`app/Models/Client.php`)
-- Pertenece a un `User` (admin) via `user_id`
-- Global Scope filtra por `ownerId()` del usuario autenticado
-- Campos fiscales: `tax_id`, `tax_regime`, `efirma_cer_path`, `efirma_key_path`
+### `Client`
+- Expediente fiscal completo del cliente del despacho
+- Campos principales: `tax_id` (RFC), `person_type`, `tax_regime` (clave SAT), `curp`, `legal_rep_name/rfc`, `email`, `phone`, `address`, `portal_sat_user/password`, `efirma_cer_path`, `efirma_key_path`, `documents` (JSON), `compliance_level`, `status`, `billing_cycle`
+- GlobalScope filtra por `user_id` del admin autenticado
+- Relaciones: `owner()`, `notes()`, `invoices()`, `fiscalObligations()`
 
-### `Invoice` (`app/Models/Invoice.php`)
-- Pertenece a un `Client`
-- Hereda el scope de tenancy a través del cliente
-- Soporta importación de XML CFDI: `xml_path`, `pdf_path`, `folio`, `uuid`, etc.
+### `FiscalObligation`
+- Una obligación fiscal = un tipo + un período + un cliente
+- Campos: `client_id`, `type` (enum), `period_year`, `period_month`, `due_date`, `status` (enum), `presented_at`, `reference`, `notes`, `acuse_pdf_path`
+- GlobalScope filtra via `client.user_id`
+- Métodos: `isOverdue()`, `acusePdfExists()`, `periodLabel()`
 
-### `ClientNote` (`app/Models/ClientNote.php`)
+### `Invoice`
+- Factura CFDI importada desde XML
+- Campos: `uuid`, `serie`, `folio`, `fecha_emision`, `rfc_emisor/receptor`, `nombre_emisor/receptor`, `uso_cfdi`, `tipo_comprobante`, `metodo_pago`, `forma_pago`, `moneda`, `subtotal`, `descuento`, `iva`, `isr_retenido`, `iva_retenido`, `total`, `concepto_principal`, `xml_path`, `pdf_path`, `status`, `parse_error`
+
+### `ClientNote`
 - Notas internas por cliente
-
-### `FiscalObligation` (`app/Models/FiscalObligation.php`)
-- Pertenece a un `Client`
-- Global Scope `owned` (via `whereHas client`)
-- La relación `client()` usa `->withoutGlobalScopes()` para evitar recursión
-- Campos: `type` (enum `ObligationType`), `status` (enum `ObligationStatus`), `period`, `due_date`, `presented_at`, `acuse_pdf_path`
+- Campos: `client_id`, `content`, timestamps
 
 ---
 
 ## Enums
 
-### `ObligationType` — tipos de obligación fiscal
-Mensual: `isr_mensual`, `iva_mensual`, `diot`  
-Bimestral: `isr_bimestral`, `iva_bimestral`, `imss_bimestral`  
-Anual: `isr_anual`, `declaracion_anual_pf`, `declaracion_anual_pm`
+### `ObligationType`
+9 tipos de obligaciones fiscales SAT:
+- Mensuales: `ISR Mensual`, `IVA Mensual`, `DIOT`
+- Bimestrales: `ISR Bimestral`, `IVA Bimestral`, `IMSS Bimestral`
+- Anuales: `ISR Anual`, `Declaración Anual PF`, `Declaración Anual PM`
 
-Incluye `forRegime(string $taxRegime): array` que dado un código de régimen SAT (ej. `'601'`) devuelve los tipos de obligación aplicables.
+Método `forRegime(string $taxRegime)` mapea cada clave SAT a sus obligaciones:
 
-### `ObligationStatus` — estado de una obligación
-`pending` (Pendiente), `presented` (Presentada), `not_applicable` (No aplica), `overdue` (Vencida)
-
----
-
-## Filament Resources
-
-Todos los resources están en `app/Filament/Resources/` con su namespace correspondiente.
-
-| Resource | Directorio | Funciones clave |
+| Clave | Régimen | Obligaciones |
 |---|---|---|
-| `ClientResource` | `Clients/` | CRUD clientes, subida de e.firma (CER/KEY), notas |
-| `InvoiceResource` | `Invoices/` | CRUD facturas, importación XML CFDI, descarga PDF/XML |
-| `TeamMemberResource` | `Team/` | CRUD equipo (solo admins), asigna rol |
-| `FiscalObligationResource` | `FiscalObligations/` | CRUD obligaciones, generador automático, modal "marcar presentada", descarga acuse PDF |
+| 601 | General PM | ISR, IVA, DIOT, Anual PM |
+| 603 | Fines no lucrativos | ISR, Anual PM |
+| 605 | Sueldos y Salarios | Anual PF |
+| 606 | Arrendamiento | ISR, IVA, Anual PF |
+| 612 | Act. Empresariales PF | ISR, IVA, DIOT, Anual PF |
+| 621 | RIF | ISR Bim, IVA Bim, Anual PF |
+| 625 | Plataformas Tech | ISR, IVA, Anual PF |
+| 626 | RESICO | ISR, IVA, Anual PF |
 
-### Particularidades de Filament v5
+### `ObligationStatus`
+`pending` · `presented` · `not_applicable` · `overdue`
 
-- `BulkActionGroup`, `DeleteBulkAction` → `Filament\Actions\{BulkActionGroup, DeleteBulkAction}`
-- `Action`, `ActionGroup` → `Filament\Actions\{Action, ActionGroup}`
-- En tablas: `->recordActions([])` y `->toolbarActions([])`
-- `IconColumn` con `->visible(fn (Model $record))` falla — usar `->visible(fn (?string $state))`
-- `ChartWidget::$heading` es propiedad de **instancia** (`protected ?string $heading`)
-- `TableWidget::$heading` es propiedad **estática** (`protected static ?string $heading`)
-- `Widget::$sort` es **estático** en todos los widgets (`protected static ?int $sort`)
-
----
-
-## Widgets del Dashboard
-
-| Widget | Clase | Descripción |
-|---|---|---|
-| Stats | `DashboardStatsWidget` | Tarjetas: total clientes, facturas del mes, obligaciones pendientes/vencidas |
-| Gráfica | `ObligacionesPorEstatusChartWidget` | Barras por mes. Para `Presented` agrupa por `presented_at`; los demás por `due_date` |
-| Tabla próximas | `ProximasObligacionesWidget` | Lista de obligaciones próximas a vencer |
+### `UserRole`
+`admin` · `capturista` · `viewer`
 
 ---
 
-## Controladores de descarga
+## Panel Filament (`/admin`)
 
-Descargas de archivos privados (disco `local`, no `public`):
+### Resources
 
-- `ClientFileController` → `GET /clients/{client}/download/cer` y `.../key`
-- `InvoiceFileController` → `GET /invoices/{invoice}/download/xml` y `.../pdf`
-- `FiscalObligationFileController` → `GET /fiscal-obligations/{fiscalObligation}/download/acuse`
+#### ClientResource
+- CRUD completo de clientes con expediente fiscal
+- Columnas: nombre, RFC, régimen, estado, ciudad, nivel de cumplimiento
+- Filtros: régimen, tipo persona, estatus, ciudad
+- Búsqueda global
+- Relation Managers: `FiscalObligationsRelationManager`, `InvoicesRelationManager`, `NotesRelationManager`
+- Vista detalle (`ViewClient`) con todas las secciones del expediente
 
-Todos bajo middleware `auth`. La policy y el Global Scope previenen acceso cruzado entre admins.
+#### FiscalObligationResource
+- CRUD de obligaciones fiscales
+- Columnas: cliente, tipo, período, fecha límite, estatus (badge de color)
+- Filtros: estatus, tipo, período
+- Acción **"Marcar como presentada"**: cambia estatus, guarda `presented_at`, permite adjuntar PDF del acuse, envía correo `ObligationPresentedMail`
+- Exportación a CSV/Excel con `FiscalObligationExporter`
 
----
+#### InvoiceResource
+- CRUD de facturas CFDI
+- Columna de tipo (emitida/recibida), UUID, emisor, receptor, total, fecha
+- Acción **"Importar XML"** (`ImportarXmlAction`): parsea el XML CFDI con `XmlCfdiParser` y pre-llena todos los campos automáticamente
+- Descarga de XML y PDF adjunto
 
-## Vistas Blade
+#### TeamMemberResource
+- CRUD de miembros del equipo (solo visible para admins)
+- Campos: nombre, email, contraseña, rol, activo
+- Solo el admin puede gestionar su propio equipo
 
-Solo existen para el módulo de suscripción (el panel lo maneja Filament):
+### Pages
 
-```
-resources/views/subscription/
-├── index.blade.php    — Página de suscripción/paywall
-├── success.blade.php  — Confirmación post-pago
-└── cancel.blade.php   — Cancelación de checkout
-```
+#### Dashboard
+- Widgets: `DashboardStatsWidget`, `ObligacionesPorEstatusChartWidget`, `IngresosEgresosChartWidget`, `ProximasObligacionesWidget`, `CalendarioVencimientosWidget`, `TrialBannerWidget`
 
----
+#### BillingPage (`/admin/billing`)
+- Muestra plan activo, fechas de trial y suscripción
+- Botones: suscribirse (checkout Stripe), portal de facturación, cancelar
+- Oculta secciones de pago si no hay suscripción activa
 
-## Rutas (`routes/web.php`)
+### Widgets
 
-```
-GET  /                                      → welcome
-GET  /subscription                          → subscription.index
-POST /subscription/checkout                 → subscription.checkout
-GET  /subscription/success                  → subscription.success
-GET  /subscription/cancel                   → subscription.cancel
-GET  /subscription/portal                   → subscription.portal
-GET  /invoices/{invoice}/download/xml       → invoices.download.xml
-GET  /invoices/{invoice}/download/pdf       → invoices.download.pdf
-GET  /clients/{client}/download/cer         → clients.download.cer
-GET  /clients/{client}/download/key         → clients.download.key
-GET  /fiscal-obligations/{fo}/download/acuse → fiscal-obligations.download.acuse
-```
+| Widget | Descripción |
+|---|---|
+| `DashboardStatsWidget` | Contadores: clientes activos, obligaciones pendientes, vencidas, facturas del mes |
+| `ObligacionesPorEstatusChartWidget` | Gráfica de dona con distribución por estatus |
+| `IngresosEgresosChartWidget` | Gráfica de barras de ingresos vs egresos por mes |
+| `ProximasObligacionesWidget` | Tabla de obligaciones próximas a vencer |
+| `CalendarioVencimientosWidget` | Vista de calendario con obligaciones por fecha |
+| `TrialBannerWidget` | Banner de aviso de trial con días restantes (se oculta si tiene suscripción activa) |
 
 ---
 
 ## Servicios
 
-### `FiscalObligationGenerator` (`app/Services/`)
-Genera automáticamente las obligaciones fiscales de un cliente para un período dado, basándose en su régimen fiscal SAT (`ObligationType::forRegime()`).
+### `FiscalObligationGenerator`
+- `generateForClient(Client, int $year, int $month)` — genera obligaciones del mes dado según el régimen SAT del cliente, sin duplicar
+- `generateYearForClient(Client, int $year)` — genera el año completo (los 12 meses + anuales)
+- `markOverdue()` — actualiza a `overdue` todas las obligaciones pendientes con fecha pasada
+- Lógica de periodicidad: mensuales (vence día 17 mes siguiente), bimestrales (meses impares), anuales (marzo PM / abril PF)
+
+### `XmlCfdiParser`
+- Parsea archivos XML de CFDI 4.0
+- Extrae: UUID, serie, folio, fecha emisión, RFC y nombre de emisor/receptor, uso CFDI, tipo comprobante, método y forma de pago, moneda, subtotal, descuento, IVA, ISR retenido, IVA retenido, total, concepto principal
 
 ---
 
-## Políticas (Policies)
+## Comandos Artisan
 
-| Policy | Modelo |
+| Comando | Descripción |
 |---|---|
-| `ClientPolicy` | `Client` |
-| `InvoicePolicy` | `Invoice` |
-| `FiscalObligationPolicy` | `FiscalObligation` |
+| `app:generate-monthly-obligations` | Genera obligaciones del mes actual para todos los clientes activos |
+| `app:generate-annual-obligations` | Genera obligaciones anuales del año actual |
+| `app:mark-overdue-obligations` | Marca como vencidas las obligaciones pendientes con fecha pasada |
+| `app:notify-obligations-due-soon` | Envía correo `ObligationDueSoonMail` para obligaciones que vencen en los próximos 5 días |
+| `app:notify-trial-ending-users` | Envía correo `TrialEndingMail` a usuarios con trial próximo a expirar |
+| `app:send-test-emails` | Envía los 8 correos de prueba a `alainttlm@gmail.com` para verificar el diseño |
 
-Siguen el patrón: admin puede todo dentro de su scope, capturista puede crear/editar pero no eliminar, viewer solo read.
+Todos los comandos periódicos deben programarse en `routes/console.php` (o con el scheduler de Laravel).
 
 ---
 
-## Tests
+## Correos (Mailables)
 
-**159 tests, 347 assertions — todos pasando.**
+| Mailable | Trigger | Descripción |
+|---|---|---|
+| `WelcomeMail` | Registro de usuario | Bienvenida con acceso al panel |
+| `TrialEndingMail` | Comando `notify-trial-ending` | Aviso de que el trial expira pronto |
+| `SubscriptionActivatedMail` | Webhook Stripe `customer.subscription.created` | Confirmación de suscripción activa |
+| `PaymentSucceededMail` | Webhook Stripe `invoice.payment_succeeded` | Confirmación de pago exitoso |
+| `PaymentFailedMail` | Webhook Stripe `invoice.payment_failed` | Aviso de pago fallido |
+| `PaymentMethodUpdatedMail` | Webhook Stripe `customer.updated` | Confirmación de método de pago actualizado |
+| `ObligationPresentedMail` | Acción "Marcar presentada" en Filament | Confirmación de obligación presentada |
+| `ObligationDueSoonMail` | Comando `notify-obligations-due-soon` | Aviso de obligación próxima a vencer |
 
-```
-tests/
-├── Unit/
-│   ├── Services/FiscalObligationGeneratorTest.php
-│   └── Services/XmlCfdiParserTest.php
-└── Feature/
-    ├── ClientFileControllerTest.php
-    ├── EnsureSubscribedTest.php          ← middleware de suscripción
-    ├── FiscalObligationFileControllerTest.php
-    ├── InvoiceFileControllerTest.php
-    └── Filament/
-        ├── ClientResourceTest.php
-        ├── DashboardWidgetTest.php
-        ├── FiscalObligationResourceTest.php
-        ├── ImportarXmlActionTest.php
-        ├── InvoiceResourceTest.php
-        └── TeamMemberResourceTest.php
-```
+Todos los correos usan el layout compartido en `resources/views/components/emails/layout.blade.php` con logo, header de color configurable y footer estándar.
 
-### Comandos de test
+---
 
+## Webhooks Stripe (Listeners)
+
+| Evento Stripe | Listener | Acción |
+|---|---|---|
+| `customer.subscription.created` | `HandleSubscriptionActivated` | Envía `SubscriptionActivatedMail` |
+| `invoice.payment_succeeded` | `HandlePaymentSucceeded` | Envía `PaymentSucceededMail` |
+| `invoice.payment_failed` | `HandlePaymentFailed` | Envía `PaymentFailedMail` |
+| `customer.updated` | `HandlePaymentMethodUpdated` | Envía `PaymentMethodUpdatedMail` |
+
+---
+
+## Suscripción (Stripe + Cashier)
+
+- Flujo: Landing → `/register` → `/admin` (con trial) → `/subscription` → Stripe Checkout → `/subscription/success`
+- Middleware `EnsureSubscribed`: redirige a `/subscription` si no hay trial activo ni suscripción
+- `SubscriptionController`: maneja checkout, portal de facturación de Stripe, success y cancel
+- Trial configurado en el registro (`trial_ends_at`)
+
+---
+
+## Tests (326 tests · 658 assertions)
+
+| Archivo | Cobertura |
+|---|---|
+| `Auth/RegisterControllerTest` | Registro de usuario, validaciones, creación de trial |
+| `ClientFileControllerTest` | Descarga de archivos CER/KEY |
+| `FiscalObligationFileControllerTest` | Descarga de acuses PDF |
+| `InvoiceFileControllerTest` | Descarga de XML/PDF de facturas |
+| `EnsureSubscribedTest` | Middleware de suscripción |
+| `RoutingTest` | Rutas públicas y protegidas |
+| `Filament/ClientResourceTest` | CRUD completo de clientes |
+| `Filament/FiscalObligationResourceTest` | CRUD y acción "marcar presentada" |
+| `Filament/InvoiceResourceTest` | CRUD de facturas |
+| `Filament/ImportarXmlActionTest` | Importación de XML CFDI |
+| `Filament/TeamMemberResourceTest` | CRUD del equipo |
+| `Filament/BillingPageTest` | Página de facturación |
+| `Filament/DashboardWidgetTest` | Widgets del dashboard |
+| `Filament/CalendarioVencimientosWidgetTest` | Widget de calendario |
+| `Filament/TrialBannerWidgetTest` | Widget de trial |
+| `Filament/GlobalSearchTest` | Búsqueda global |
+| `Filament/FiscalObligationExporterTest` | Exportación CSV |
+| `Filament/ObligationPresentedNotificationTest` | Correo al marcar presentada |
+| `Filament/Clients/NotesRelationManagerTest` | Notas del cliente |
+| `Filament/Clients/ViewClientTest` | Vista detalle del cliente |
+| `Commands/GenerateMonthlyObligationsTest` | Comando generación mensual |
+| `Commands/GenerateAnnualObligationsTest` | Comando generación anual |
+| `Commands/MarkOverdueObligationsTest` | Comando marcar vencidas |
+| `Commands/NotifyObligationsDueSoonTest` | Comando notificaciones |
+| `Listeners/HandlePaymentFailedTest` | Listener webhook Stripe |
+| `StripeWebhookTest` | Webhooks Stripe (eventos clave) |
+| `StripeWebhookMailTest` | Correos disparados por webhooks (11 tests) |
+| `Mail/WelcomeMailTest` | Correo de bienvenida |
+| `Mail/TrialEndingMailTest` | Correo de trial |
+| `Unit/Services/FiscalObligationGeneratorTest` | Lógica de generación de obligaciones |
+| `Unit/Services/XmlCfdiParserTest` | Parser de XML CFDI |
+
+### Ejecutar tests
 ```bash
-# Suite completa
-php artisan test --compact
-
-# Un archivo
-php artisan test --compact tests/Feature/EnsureSubscribedTest.php
-
-# Por nombre de test
-php artisan test --compact --filter=test_admin_on_generic_trial_can_pass
+php -d memory_limit=512M vendor/bin/phpunit --configuration phpunit.xml --no-coverage
 ```
 
-### Convención en factories
+---
 
-`UserFactory` crea admins con `trial_ends_at = now()->addDays(14)` por defecto, simulando el estado real de un admin recién registrado. Los tests de `EnsureSubscribedTest` que prueban el caso "sin acceso" especifican `trial_ends_at = null` explícitamente.
+## Assets / Branding
+
+- `public/images/favicon.png` — favicon del sitio
+- `public/images/contabo.png` — logo principal
+- Panel Filament: favicon y brand logo configurados en `AdminPanelProvider`
+- Landing y registro: favicon en `<head>` + logo imagen en `<nav>`
+- Emails: logo con URL absoluta (`APP_URL/images/contabo.png`) — funciona en producción
 
 ---
 
-## Convenciones de código
+## Despliegue (VPS con Dokploy)
 
-- **Pint** debe correr sobre todos los archivos PHP modificados antes de finalizar:
-  ```bash
-  php /Users/alainlemusmunoz/Herd/contabo-saas-filament/vendor/bin/pint archivo1.php archivo2.php --format agent
-  ```
-- **Cada cambio debe tener test.** PHPUnit, no Pest.
-- No crear archivos de documentación sin pedirlo explícitamente.
-- No usar `cd` en bash — usar parámetro `workdir` o rutas absolutas.
-- `mkdir` falla en bash en esta máquina — usar Python: `python3 -c "import os; os.makedirs('ruta', exist_ok=True)"`
-- Preferir Write de archivo completo sobre patches parciales cuando sea posible.
+Variables de entorno requeridas:
+
+```env
+APP_URL=https://tu-dominio.com
+APP_ENV=production
+APP_KEY=
+
+DB_CONNECTION=mysql
+DB_HOST=
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
+
+STRIPE_KEY=
+STRIPE_SECRET=
+STRIPE_WEBHOOK_SECRET=
+CASHIER_CURRENCY=mxn
+
+MAIL_MAILER=smtp
+MAIL_HOST=
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+MAIL_FROM_NAME="ContaboSaaS"
+```
+
+### Tareas programadas (cron)
+Agregar al cron del servidor:
+```bash
+* * * * * php /path-to-project/artisan schedule:run >> /dev/null 2>&1
+```
+
+Y en `routes/console.php` registrar:
+```php
+Schedule::command('app:generate-monthly-obligations')->monthlyOn(1, '06:00');
+Schedule::command('app:generate-annual-obligations')->yearlyOn(1, 1, '06:00');
+Schedule::command('app:mark-overdue-obligations')->dailyAt('00:05');
+Schedule::command('app:notify-obligations-due-soon')->dailyAt('08:00');
+Schedule::command('app:notify-trial-ending-users')->dailyAt('09:00');
+```
 
 ---
 
-## Próximos pasos sugeridos
+## Ideas y mejoras pendientes
 
-Lo que aún no está implementado:
-
-- **Webhook de Stripe** — manejar eventos `customer.subscription.deleted`, `invoice.payment_failed`, etc. para actualizar estado en BD.
-- **Registro con trial automático** — al registrarse, iniciar el trial genérico (`trial_ends_at`) directamente en la creación del usuario, sin esperar al checkout.
-- **Notificaciones por email** — aviso cuando el trial está por vencer, cuando el pago falla, etc.
-- **Seeders** — datos de prueba para demostración.
-- **Módulo de reportes** — exportación de obligaciones y facturas a Excel/PDF.
+Ver sección **"Roadmap de mejoras"** más abajo.

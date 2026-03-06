@@ -28,6 +28,8 @@ class FiscalObligationExporterTest extends TestCase
     {
         parent::setUp();
 
+        Client::flushEventListeners();
+
         $this->admin = User::factory()->create();
         $this->client = Client::factory()->create([
             'user_id' => $this->admin->id,

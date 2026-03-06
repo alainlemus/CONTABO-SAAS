@@ -3,11 +3,15 @@
 namespace App\Filament\Resources\Clients\Tables;
 
 use App\Models\Client;
+use App\Models\ClientNote;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -95,6 +99,19 @@ class ClientsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
+                IconColumn::make('portal_sat_credentials')
+                    ->label('Portal SAT')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-exclamation-triangle')
+                    ->trueColor('success')
+                    ->falseColor('warning')
+                    ->state(fn (Client $record): bool => filled($record->portal_sat_user) && filled($record->portal_sat_password))
+                    ->tooltip(fn (Client $record): string => filled($record->portal_sat_user) && filled($record->portal_sat_password)
+                        ? 'Credenciales del portal SAT configuradas'
+                        : 'Faltan credenciales del portal SAT')
+                    ->toggleable(),
+
                 IconColumn::make('efirma_cer_path')
                     ->label('CER')
                     ->boolean()
@@ -145,6 +162,42 @@ class ClientsTable
                     ]),
             ])
             ->recordActions([
+                Action::make('quick_note')
+                    ->label('Nota rápida')
+                    ->icon('heroicon-o-chat-bubble-left-ellipsis')
+                    ->color('gray')
+                    ->modalHeading(fn (Client $record): string => "Nota rápida — {$record->name}")
+                    ->modalSubmitActionLabel('Guardar nota')
+                    ->form([
+                        Select::make('type')
+                            ->label('Tipo')
+                            ->options([
+                                'general' => 'General',
+                                'alert' => 'Alerta',
+                                'reminder' => 'Recordatorio',
+                            ])
+                            ->default('general')
+                            ->required(),
+                        Textarea::make('body')
+                            ->label('Nota')
+                            ->required()
+                            ->rows(4)
+                            ->columnSpanFull(),
+                    ])
+                    ->action(function (Client $record, array $data): void {
+                        ClientNote::create([
+                            'client_id' => $record->id,
+                            'user_id' => auth()->id(),
+                            'type' => $data['type'],
+                            'body' => $data['body'],
+                        ]);
+
+                        Notification::make()
+                            ->title('Nota guardada')
+                            ->success()
+                            ->send();
+                    }),
+
                 EditAction::make(),
                 ActionGroup::make([
                     Action::make('download_cer')
