@@ -208,19 +208,35 @@ class BillingPage extends Page
         $subscription = $isStripeConfigured ? $owner->subscription('default') : null;
 
         $status = match (true) {
-            $owner->onTrial() => 'trial',
             $subscription?->onGracePeriod() => 'grace_period',
             $subscription?->active() => 'active',
             $subscription?->canceled() => 'canceled',
+            $owner->onGenericTrial() => 'trial',
             default => 'none',
         };
 
-        $paymentMethod = null;
+        $paymentMethods = collect();
         $invoices = collect();
 
         if ($isStripeConfigured) {
             try {
-                $paymentMethod = $owner->defaultPaymentMethod();
+                $paymentMethods = $owner->paymentMethods('card');
+
+                // Si el customer no tiene default PM seteado, usar el de la suscripción
+                if ($paymentMethods->isNotEmpty() && ! $owner->defaultPaymentMethod()) {
+                    $stripeSubscription = $owner->stripe()->subscriptions->retrieve(
+                        $subscription->stripe_id,
+                        ['expand' => ['default_payment_method']]
+                    );
+
+                    if ($stripeSubscription->default_payment_method) {
+                        $owner->stripe()->customers->update($owner->stripe_id, [
+                            'invoice_settings' => [
+                                'default_payment_method' => $stripeSubscription->default_payment_method->id,
+                            ],
+                        ]);
+                    }
+                }
             } catch (\Exception) {
             }
 
@@ -237,7 +253,7 @@ class BillingPage extends Page
             'onTrial' => $owner->onTrial(),
             'trialEndsAt' => $owner->trialEndsAt(),
             'subscription' => $subscription,
-            'paymentMethod' => $paymentMethod,
+            'paymentMethods' => $paymentMethods,
             'invoices' => $invoices,
             'isStripeConfigured' => $isStripeConfigured,
         ];

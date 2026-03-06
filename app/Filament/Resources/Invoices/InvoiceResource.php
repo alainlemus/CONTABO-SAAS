@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class InvoiceResource extends Resource
 {
@@ -27,6 +28,12 @@ class InvoiceResource extends Resource
     protected static string|\UnitEnum|null $navigationGroup = 'Cartera';
 
     protected static ?int $navigationSort = 2;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('client', fn (Builder $q) => $q->where('user_id', auth()->user()->ownerId()));
+    }
 
     public static function form(Schema $schema): Schema
     {

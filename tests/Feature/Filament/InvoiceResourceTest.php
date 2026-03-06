@@ -234,4 +234,27 @@ class InvoiceResourceTest extends TestCase
             ->test(EditInvoice::class, ['record' => $invoice->getRouteKey()])
             ->assertActionHidden('download_pdf');
     }
+
+    public function test_list_does_not_show_invoices_from_other_users(): void
+    {
+        $otherUser = User::factory()->create();
+        $otherClient = Client::factory()->create(['user_id' => $otherUser->id]);
+        $otherInvoice = Invoice::factory()->create(['client_id' => $otherClient->id]);
+
+        $myInvoice = Invoice::factory()->create(['client_id' => $this->client->id]);
+
+        Livewire::actingAs($this->admin)
+            ->test(ListInvoices::class)
+            ->assertCanSeeTableRecords([$myInvoice])
+            ->assertCanNotSeeTableRecords([$otherInvoice]);
+    }
+
+    public function test_list_page_loads_for_new_user_without_data(): void
+    {
+        $newUser = User::factory()->create();
+
+        $this->actingAs($newUser)
+            ->get(InvoiceResource::getUrl('index'))
+            ->assertSuccessful();
+    }
 }

@@ -131,7 +131,7 @@ class BillingPageTest extends TestCase
         $this->assertArrayHasKey('onTrial', $data);
         $this->assertArrayHasKey('trialEndsAt', $data);
         $this->assertArrayHasKey('subscription', $data);
-        $this->assertArrayHasKey('paymentMethod', $data);
+        $this->assertArrayHasKey('paymentMethods', $data);
         $this->assertArrayHasKey('invoices', $data);
         $this->assertArrayHasKey('isStripeConfigured', $data);
     }
@@ -234,5 +234,61 @@ class BillingPageTest extends TestCase
         $result = $instance->openPortal();
 
         $this->assertNull($result);
+    }
+
+    public function test_payment_method_section_hidden_when_on_trial(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+            'trial_ends_at' => now()->addDays(5),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(BillingPage::class)
+            ->assertDontSee('Método de pago');
+    }
+
+    public function test_payment_history_section_hidden_when_on_trial(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+            'trial_ends_at' => now()->addDays(5),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(BillingPage::class)
+            ->assertDontSee('Historial de pagos');
+    }
+
+    public function test_payment_method_section_hidden_when_no_subscription(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+            'trial_ends_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(BillingPage::class)
+            ->assertDontSee('Método de pago');
+    }
+
+    public function test_payment_history_section_hidden_when_no_subscription(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+            'trial_ends_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(BillingPage::class)
+            ->assertDontSee('Historial de pagos');
     }
 }
