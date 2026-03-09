@@ -21,6 +21,7 @@ RUN apk add --no-cache \
     oniguruma-dev \
     libzip-dev \
     postgresql-dev \
+    icu-dev \
     zip \
     unzip \
     git
@@ -39,7 +40,8 @@ RUN docker-php-ext-install \
     gd \
     bcmath \
     zip \
-    opcache
+    opcache \
+    intl
 
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
