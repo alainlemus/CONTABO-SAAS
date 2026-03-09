@@ -11,7 +11,7 @@ RUN npm run build
 
 
 # ---------- STAGE 2: PHP ----------
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Dependencias del sistema
 RUN apk add --no-cache \
