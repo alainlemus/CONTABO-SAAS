@@ -8,10 +8,10 @@
     {{-- ── SEO ─────────────────────────────────────────────────────────────── --}}
     <title>Crear cuenta gratis — Contabo | Software contable para despachos en México</title>
     <meta name="description"
-        content="Crea tu cuenta gratis en ContaboSaaS y empieza a gestionar tus clientes, obligaciones fiscales SAT y facturas CFDI. 14 días de prueba sin tarjeta.">
+        content="Crea tu cuenta gratis en Contabo y empieza a gestionar tus clientes, obligaciones fiscales SAT y facturas CFDI. 14 días de prueba sin tarjeta.">
     <meta name="robots" content="noindex, follow">
     <link rel="canonical" href="{{ url('/register') }}">
-    <meta property="og:title" content="Crear cuenta — ContaboSaaS">
+    <meta property="og:title" content="Crear cuenta — Contabo">
     <meta property="og:description"
         content="14 días gratis para gestionar tu despacho contable. Sin tarjeta requerida.">
     <meta property="og:url" content="{{ url('/register') }}">
@@ -618,14 +618,14 @@
 <body>
     <nav>
         <a href="/" class="logo">
-            <img src="/images/contabo.png" alt="ContaboSaaS — Inicio" style="height: 3.5rem; display: block;">
+            <img src="/images/contabo.png" alt="Contabo — Inicio" style="height: 3.5rem; display: block;">
         </a>
         <span class="nav-link">¿Ya tienes cuenta? <a href="/admin/login">Iniciar sesión</a></span>
     </nav>
 
     <main>
         <!-- ── Panel izquierdo con propuesta de valor ─────────────────────────── -->
-        <aside class="side-panel" aria-label="Beneficios de ContaboSaaS">
+        <aside class="side-panel" aria-label="Beneficios de Contabo">
             <h1 class="side-title">Tu despacho, <span>organizado</span> desde hoy</h1>
             <p class="side-sub">
                 Únete a los contadores mexicanos que ya automatizaron sus obligaciones SAT,

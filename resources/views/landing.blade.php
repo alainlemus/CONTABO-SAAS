@@ -12,22 +12,22 @@
     <meta name="keywords"
         content="software contabilidad México, gestión obligaciones fiscales SAT, software despacho contable, CFDI XML, régimen fiscal, ISR IVA DIOT, software contador México">
     <meta name="robots" content="index, follow">
-    <meta name="author" content="ContaboSaaS">
+    <meta name="author" content="Contabo">
     <link rel="canonical" href="{{ url('/') }}">
 
     {{-- ── Open Graph ───────────────────────────────────────────────────────── --}}
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url('/') }}">
-    <meta property="og:title" content="ContaboSaaS — Software fiscal para despachos mexicanos">
+    <meta property="og:title" content="Contabo — Software fiscal para despachos mexicanos">
     <meta property="og:description"
         content="El panel que los contadores mexicanos necesitaban. Gestiona clientes, CFDI y obligaciones SAT desde un solo lugar. 14 días gratis.">
     <meta property="og:image" content="{{ asset('images/contabo.png') }}">
     <meta property="og:locale" content="es_MX">
-    <meta property="og:site_name" content="ContaboSaaS">
+    <meta property="og:site_name" content="Contabo">
 
     {{-- ── Twitter Card ─────────────────────────────────────────────────────── --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ContaboSaaS — Software fiscal para despachos mexicanos">
+    <meta name="twitter:title" content="Contabo — Software fiscal para despachos mexicanos">
     <meta name="twitter:description"
         content="Gestiona clientes, CFDI y obligaciones SAT desde un solo panel. Prueba 14 días gratis.">
     <meta name="twitter:image" content="{{ asset('images/contabo.png') }}">
@@ -39,7 +39,7 @@
         $schemaData = [
             '@context' => 'https://schema.org',
             '@type' => 'SoftwareApplication',
-            'name' => 'ContaboSaaS',
+            'name' => 'Contabo',
             'applicationCategory' => 'BusinessApplication',
             'operatingSystem' => 'Web',
             'description' => 'Software de gestión contable y fiscal para despachos y contadores en México. Automatiza obligaciones SAT, gestiona CFDIs y administra clientes.',
@@ -57,7 +57,7 @@
             'url' => $siteUrl,
             'provider' => [
                 '@type' => 'Organization',
-                'name' => 'ContaboSaaS',
+                'name' => 'Contabo',
                 'url' => $siteUrl,
             ],
         ];
@@ -1147,7 +1147,7 @@
     <nav id="main-nav">
         <div class="logo">
             <a href="/">
-                <img src="/images/contabo.png" alt="ContaboSaaS — Software contable para México"
+                <img src="/images/contabo.png" alt="Contabo — Software contable para México"
                     style="height: 4rem; display: block;">
             </a>
         </div>
@@ -1375,7 +1375,7 @@
             <span class="footer-sep">·</span>
             <a href="/admin/login">Iniciar sesión</a>
         </div>
-        <p>© {{ date('Y') }} ContaboSaaS · Software de contabilidad para despachos mexicanos</p>
+        <p>© {{ date('Y') }} Contabo · Software de contabilidad para despachos mexicanos</p>
     </footer>
 
     <script>

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Dashboard;
 use App\Http\Middleware\EnsureSubscribed;
 use Filament\Http\Middleware\Authenticate;
@@ -26,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->darkMode(true)
             ->favicon(asset('images/favicon.png'))
             ->brandLogo(asset('images/contabo.png'))

@@ -30,6 +30,14 @@ class RoutingTest extends TestCase
         $response->assertViewIs('legal.terms');
     }
 
+    public function test_admin_login_page_returns_200(): void
+    {
+        $response = $this->get('/admin/login');
+
+        $response->assertStatus(200);
+        $response->assertSee('Iniciar sesión');
+    }
+
     public function test_admin_register_route_does_not_exist(): void
     {
         $response = $this->get('/admin/register');
