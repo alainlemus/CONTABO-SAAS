@@ -11,6 +11,14 @@ Route::get('/', function () {
     return view('landing');
 });
 
+Route::get('/aviso-de-privacidad', function () {
+    return view('legal.privacy');
+})->name('legal.privacy');
+
+Route::get('/terminos-y-condiciones', function () {
+    return view('legal.terms');
+})->name('legal.terms');
+
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);

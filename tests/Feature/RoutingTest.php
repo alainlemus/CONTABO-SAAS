@@ -14,6 +14,22 @@ class RoutingTest extends TestCase
         $response->assertViewIs('landing');
     }
 
+    public function test_privacy_page_returns_200(): void
+    {
+        $response = $this->get('/aviso-de-privacidad');
+
+        $response->assertStatus(200);
+        $response->assertViewIs('legal.privacy');
+    }
+
+    public function test_terms_page_returns_200(): void
+    {
+        $response = $this->get('/terminos-y-condiciones');
+
+        $response->assertStatus(200);
+        $response->assertViewIs('legal.terms');
+    }
+
     public function test_admin_register_route_does_not_exist(): void
     {
         $response = $this->get('/admin/register');

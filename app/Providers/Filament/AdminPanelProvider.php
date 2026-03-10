@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('images/contabo.png'))
             ->brandLogoHeight('4rem')
             ->brandName('Contabo')
+            ->homeUrl('/')
             ->colors([
                 'primary' => Color::Amber,
             ])
