@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,10 +14,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements CanResetPasswordContract, FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use Billable, HasFactory, Notifiable;
+    use Billable, CanResetPassword, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',

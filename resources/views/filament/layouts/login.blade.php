@@ -242,6 +242,12 @@
             .cbl-fi-wrap a:hover { text-decoration: underline; }
 
             /* ── Divider y link de registro ── */
+            .cbl-forgot-link {
+                text-align: center; margin-top: 1rem;
+                font-size: .875rem;
+            }
+            .cbl-forgot-link a { color: var(--amber) !important; font-weight: 600; text-decoration: none; }
+            .cbl-forgot-link a:hover { text-decoration: underline; }
             .cbl-divider {
                 text-align: center; margin: 1.5rem 0;
                 font-size: .82rem; color: #94a3b8;
@@ -321,6 +327,10 @@
                 <div class="cbl-fi-wrap">
                     {{ $slot }}
                 </div>
+
+                <p class="cbl-forgot-link">
+                    <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
+                </p>
 
                 <div class="cbl-divider">o</div>
                 <p class="cbl-register-link">

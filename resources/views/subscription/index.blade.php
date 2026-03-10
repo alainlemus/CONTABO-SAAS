@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suscripción — ContaboSaaS</title>
+    <title>Suscripción — Contabo</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -117,7 +117,7 @@
 <body>
     <div class="container">
         <div class="card">
-            <div class="logo">ContaboSaaS</div>
+            <div class="logo">Contabo</div>
 
             @if(session('error'))
                 <div class="alert-error">
@@ -128,7 +128,7 @@
             @if(! $onTrial && ! $subscribed)
                 <h1>Tu período de prueba ha terminado</h1>
                 <p class="subtitle">
-                    Para continuar usando ContaboSaaS, activa tu suscripción.<br>
+                    Para continuar usando Contabo, activa tu suscripción.<br>
                     Primeros <strong>14 días gratis</strong>, sin tarjeta requerida para el trial.
                 </p>
             @else

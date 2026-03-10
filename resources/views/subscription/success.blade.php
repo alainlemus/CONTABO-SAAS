@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suscripción activada — ContaboSaaS</title>
+    <title>Suscripción activada — Contabo</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -51,7 +51,7 @@
         <div class="card">
             <div class="icon">✓</div>
             <h1>¡Suscripción activada!</h1>
-            <p>Tu suscripción a ContaboSaaS está activa. Ya puedes acceder a todas las funciones del sistema.</p>
+            <p>Tu suscripción a Contabo está activa. Ya puedes acceder a todas las funciones del sistema.</p>
             <a href="/admin" class="btn">Ir al panel</a>
         </div>
     </div>

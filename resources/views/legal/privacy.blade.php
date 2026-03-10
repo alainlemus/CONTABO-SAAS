@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aviso de Privacidad — ContaboSaaS</title>
+    <title>Aviso de Privacidad — Contabo</title>
     <meta name="description"
-        content="Aviso de Privacidad de ContaboSaaS. Conoce cómo tratamos tus datos personales de conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP).">
+        content="Aviso de Privacidad de Contabo. Conoce cómo tratamos tus datos personales de conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP).">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url('/aviso-de-privacidad') }}">
-    <meta property="og:title" content="Aviso de Privacidad — ContaboSaaS">
-    <meta property="og:description" content="Conoce cómo protegemos tus datos personales en ContaboSaaS.">
+    <meta property="og:title" content="Aviso de Privacidad — Contabo">
+    <meta property="og:description" content="Conoce cómo protegemos tus datos personales en Contabo.">
     <meta property="og:url" content="{{ url('/aviso-de-privacidad') }}">
     <link rel="icon" type="image/png" href="/images/favicon.png">
 
@@ -254,7 +254,7 @@
 <body>
     <nav>
         <a href="/" class="logo">
-            <img src="/images/contabo.png" alt="ContaboSaaS" style="height: 3rem; display: block;">
+            <img src="/images/contabo.png" alt="Contabo" style="height: 3rem; display: block;">
         </a>
         <a href="/" class="btn-back">← Volver al inicio</a>
     </nav>
@@ -262,7 +262,7 @@
     <div class="legal-hero">
         <div class="legal-tag">Legal</div>
         <h1>Aviso de Privacidad</h1>
-        <p class="legal-meta">Última actualización: {{ date('d \d\e F \d\e Y') }} · ContaboSaaS</p>
+        <p class="legal-meta">Última actualización: {{ date('d \d\e F \d\e Y') }} · Contabo</p>
     </div>
 
     <div class="legal-wrap">
@@ -285,7 +285,7 @@
         </nav>
 
         <div class="highlight-box">
-            <strong>Resumen:</strong> En ContaboSaaS tratamos tus datos personales con pleno respeto a la
+            <strong>Resumen:</strong> En Contabo tratamos tus datos personales con pleno respeto a la
             <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)</strong>
             y su Reglamento. Solo usamos los datos estrictamente necesarios para prestarte el servicio.
         </div>
@@ -294,7 +294,7 @@
         <section class="legal-section" id="responsable">
             <h2><span class="num" aria-hidden="true">1</span> Responsable del tratamiento</h2>
             <p>
-                <strong>ContaboSaaS</strong> (en adelante, "el Responsable" o "ContaboSaaS") es el responsable
+                <strong>Contabo</strong> (en adelante, "el Responsable" o "Contabo") es el responsable
                 del tratamiento de los datos personales que usted nos proporcione al usar la plataforma disponible
                 en <a href="{{ url('/') }}">{{ url('/') }}</a>.
             </p>
@@ -320,7 +320,7 @@
             <p><strong>Datos de pago y facturación (procesados por Stripe):</strong></p>
             <ul>
                 <li>Información de tarjeta de crédito o débito (número, fecha de vencimiento, CVV).
-                    <em>Estos datos los procesa directamente Stripe, Inc. ContaboSaaS no almacena datos de tarjeta.</em>
+                    <em>Estos datos los procesa directamente Stripe, Inc. Contabo no almacena datos de tarjeta.</em>
                 </li>
                 <li>Historial de pagos y facturas de suscripción</li>
             </ul>
@@ -332,7 +332,7 @@
                 <li>Preferencias de configuración</li>
             </ul>
 
-            <p><strong>Datos sensibles:</strong> ContaboSaaS no recaba datos personales sensibles del titular de
+            <p><strong>Datos sensibles:</strong> Contabo no recaba datos personales sensibles del titular de
                 la cuenta (salud, religión, orientación sexual, etc.). No obstante, como parte del servicio, el
                 titular puede cargar en la plataforma datos de sus propios clientes (personas físicas o morales),
                 incluyendo RFC, e.firma (archivo .cer y .key) y datos fiscales. Ver sección VIII.</p>
@@ -344,7 +344,7 @@
 
             <p><strong>Finalidades primarias (necesarias para la prestación del servicio):</strong></p>
             <ul>
-                <li>Crear y administrar su cuenta de usuario en ContaboSaaS</li>
+                <li>Crear y administrar su cuenta de usuario en Contabo</li>
                 <li>Prestar el servicio de gestión contable y fiscal contratado</li>
                 <li>Procesar pagos y gestionar su suscripción mensual</li>
                 <li>Enviar notificaciones relacionadas con el servicio (vencimientos, pagos, alertas fiscales)</li>
@@ -367,7 +367,7 @@
         <!-- IV. Transferencias -->
         <section class="legal-section" id="transferencias">
             <h2><span class="num" aria-hidden="true">4</span> Transferencias de datos</h2>
-            <p>ContaboSaaS puede compartir sus datos con los siguientes terceros en los términos de la LFPDPPP:</p>
+            <p>Contabo puede compartir sus datos con los siguientes terceros en los términos de la LFPDPPP:</p>
 
             <ul>
                 <li><strong>Stripe, Inc.</strong> — Procesador de pagos. Tratamiento de datos de tarjeta y
@@ -379,11 +379,11 @@
             </ul>
 
             <p>Estas transferencias se realizan con proveedores que ofrecen niveles adecuados de protección
-                y se encuentran regidos por sus propias políticas de privacidad. ContaboSaaS no vende,
+                y se encuentran regidos por sus propias políticas de privacidad. Contabo no vende,
                 cede ni comercializa sus datos personales a terceros con fines publicitarios o comerciales
                 ajenos al servicio.</p>
 
-            <p>Salvo en los casos descritos, ContaboSaaS no realizará transferencias de sus datos personales
+            <p>Salvo en los casos descritos, Contabo no realizará transferencias de sus datos personales
                 sin su consentimiento previo, excepto cuando sea requerido por autoridad competente o
                 lo establezca la ley.</p>
         </section>
@@ -415,7 +415,7 @@
         <!-- VI. Consentimiento y cookies -->
         <section class="legal-section" id="consentimiento">
             <h2><span class="num" aria-hidden="true">6</span> Consentimiento y uso de cookies</h2>
-            <p>Al crear una cuenta en ContaboSaaS y aceptar el presente Aviso de Privacidad, usted otorga su
+            <p>Al crear una cuenta en Contabo y aceptar el presente Aviso de Privacidad, usted otorga su
                 consentimiento para el tratamiento de sus datos personales conforme a las finalidades
                 primarias descritas en este documento.</p>
 
@@ -434,7 +434,7 @@
         <!-- VII. Seguridad -->
         <section class="legal-section" id="seguridad">
             <h2><span class="num" aria-hidden="true">7</span> Medidas de seguridad</h2>
-            <p>ContaboSaaS implementa medidas técnicas, administrativas y físicas de seguridad para proteger
+            <p>Contabo implementa medidas técnicas, administrativas y físicas de seguridad para proteger
                 sus datos personales contra pérdida, uso indebido, acceso no autorizado, alteración o
                 destrucción, que incluyen:</p>
             <ul>
@@ -451,14 +451,14 @@
         <section class="legal-section" id="datos-terceros">
             <h2><span class="num" aria-hidden="true">8</span> Datos de terceros (clientes del despacho)</h2>
             <p>
-                Como parte del servicio, los usuarios de ContaboSaaS (despachos y contadores) pueden
+                Como parte del servicio, los usuarios de Contabo (despachos y contadores) pueden
                 cargar y gestionar datos personales de sus propios clientes (personas físicas o morales),
                 tales como RFC, nombre, CURP, e.firma, domicilio fiscal y documentos.
             </p>
             <p>
                 En este supuesto, el <strong>despacho contable actúa como responsable</strong> del tratamiento
-                de dichos datos ante sus clientes, y ContaboSaaS actúa como <strong>encargado</strong>
-                en los términos del artículo 50 de la LFPDPPP. ContaboSaaS tratará esos datos
+                de dichos datos ante sus clientes, y Contabo actúa como <strong>encargado</strong>
+                en los términos del artículo 50 de la LFPDPPP. Contabo tratará esos datos
                 exclusivamente para prestar el servicio contratado y no los utilizará para ninguna
                 otra finalidad.
             </p>
@@ -472,16 +472,16 @@
         <section class="legal-section" id="sat">
             <h2><span class="num" aria-hidden="true">9</span> Datos relacionados con el SAT</h2>
             <p>
-                ContaboSaaS es una plataforma de gestión interna para despachos contables. <strong>No está
+                Contabo es una plataforma de gestión interna para despachos contables. <strong>No está
                 afiliada, patrocinada ni certificada por el Servicio de Administración Tributaria (SAT)</strong>.
                 Los datos fiscales (RFC, regímenes, obligaciones, CFDIs) se almacenan y gestionan únicamente
                 con la finalidad de apoyar las tareas administrativas del despacho contable, sin que
-                ContaboSaaS transmita información al SAT en nombre del usuario.
+                Contabo transmita información al SAT en nombre del usuario.
             </p>
             <p>
                 La e.firma (archivos .cer y .key) y contraseñas del portal SAT que el usuario registre
                 en la plataforma son de uso interno del despacho y se almacenan en repositorios con
-                acceso restringido. ContaboSaaS no utiliza dichos archivos para realizar trámites
+                acceso restringido. Contabo no utiliza dichos archivos para realizar trámites
                 ante el SAT de manera automatizada.
             </p>
         </section>
@@ -490,7 +490,7 @@
         <section class="legal-section" id="cambios">
             <h2><span class="num" aria-hidden="true">10</span> Cambios al aviso de privacidad</h2>
             <p>
-                ContaboSaaS se reserva el derecho de modificar el presente Aviso de Privacidad en
+                Contabo se reserva el derecho de modificar el presente Aviso de Privacidad en
                 cualquier momento para adaptarse a cambios normativos, novedades jurisprudenciales
                 o cambios en nuestra política de privacidad. Cualquier modificación será notificada
                 a través de:
@@ -532,7 +532,7 @@
             <span style="color: var(--slate-200);">·</span>
             <a href="/">Inicio</a>
         </div>
-        <p>© {{ date('Y') }} ContaboSaaS · Software de contabilidad para despachos mexicanos</p>
+        <p>© {{ date('Y') }} Contabo · Software de contabilidad para despachos mexicanos</p>
     </footer>
 </body>
 

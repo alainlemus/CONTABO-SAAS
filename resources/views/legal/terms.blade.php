@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Términos y Condiciones — ContaboSaaS</title>
+    <title>Términos y Condiciones — Contabo</title>
     <meta name="description"
-        content="Términos y Condiciones de uso de ContaboSaaS. Lee los derechos, obligaciones y condiciones del servicio de software contable para despachos en México.">
+        content="Términos y Condiciones de uso de Contabo. Lee los derechos, obligaciones y condiciones del servicio de software contable para despachos en México.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url('/terminos-y-condiciones') }}">
-    <meta property="og:title" content="Términos y Condiciones — ContaboSaaS">
+    <meta property="og:title" content="Términos y Condiciones — Contabo">
     <meta property="og:description"
-        content="Conoce los términos de uso del software de contabilidad ContaboSaaS para despachos en México.">
+        content="Conoce los términos de uso del software de contabilidad Contabo para despachos en México.">
     <meta property="og:url" content="{{ url('/terminos-y-condiciones') }}">
     <link rel="icon" type="image/png" href="/images/favicon.png">
 
@@ -263,7 +263,7 @@
 <body>
     <nav>
         <a href="/" class="logo">
-            <img src="/images/contabo.png" alt="ContaboSaaS" style="height: 3rem; display: block;">
+            <img src="/images/contabo.png" alt="Contabo" style="height: 3rem; display: block;">
         </a>
         <a href="/" class="btn-back">← Volver al inicio</a>
     </nav>
@@ -271,7 +271,7 @@
     <div class="legal-hero">
         <div class="legal-tag">Legal</div>
         <h1>Términos y Condiciones</h1>
-        <p class="legal-meta">Última actualización: {{ date('d \d\e F \d\e Y') }} · ContaboSaaS</p>
+        <p class="legal-meta">Última actualización: {{ date('d \d\e F \d\e Y') }} · Contabo</p>
     </div>
 
     <div class="legal-wrap">
@@ -299,7 +299,7 @@
 
         <div class="highlight-box">
             <strong>Importante:</strong> Lea detenidamente estos Términos y Condiciones antes de usar
-            ContaboSaaS. Al crear una cuenta o usar el servicio, usted acepta quedar obligado por
+            Contabo. Al crear una cuenta o usar el servicio, usted acepta quedar obligado por
             estos términos. Si no está de acuerdo, no utilice el servicio.
         </div>
 
@@ -308,11 +308,11 @@
             <h2><span class="num" aria-hidden="true">1</span> Definiciones</h2>
             <p>Para efectos de los presentes Términos y Condiciones, se entenderá por:</p>
             <ul>
-                <li><strong>"ContaboSaaS" / "el Proveedor" / "nosotros":</strong> La plataforma de software
+                <li><strong>"Contabo" / "el Proveedor" / "nosotros":</strong> La plataforma de software
                     como servicio disponible en <a href="{{ url('/') }}">{{ url('/') }}</a> y sus operadores.</li>
                 <li><strong>"Usuario" / "usted":</strong> La persona física o moral que contrata y usa el servicio,
                     generalmente un despacho contable, contador o profesional fiscal.</li>
-                <li><strong>"Cuenta":</strong> El acceso personalizado al panel de administración de ContaboSaaS,
+                <li><strong>"Cuenta":</strong> El acceso personalizado al panel de administración de Contabo,
                     identificado por correo electrónico y contraseña.</li>
                 <li><strong>"Suscripción":</strong> El plan de pago mensual que habilita el acceso completo
                     al servicio.</li>
@@ -330,7 +330,7 @@
         <section class="legal-section" id="aceptacion">
             <h2><span class="num" aria-hidden="true">2</span> Aceptación de los términos</h2>
             <p>
-                Al registrarse en ContaboSaaS, usar el servicio o hacer clic en "Crear cuenta gratis",
+                Al registrarse en Contabo, usar el servicio o hacer clic en "Crear cuenta gratis",
                 usted declara que:
             </p>
             <ul>
@@ -346,7 +346,7 @@
         <!-- III. Descripción -->
         <section class="legal-section" id="descripcion">
             <h2><span class="num" aria-hidden="true">3</span> Descripción del servicio</h2>
-            <p>ContaboSaaS es una plataforma SaaS (Software as a Service) diseñada para despachos
+            <p>Contabo es una plataforma SaaS (Software as a Service) diseñada para despachos
                 contables y contadores en México. El servicio incluye, de manera enunciativa más no
                 limitativa:</p>
             <ul>
@@ -361,7 +361,7 @@
                 <li>Almacenamiento de documentos y acuses PDF</li>
             </ul>
             <p>
-                ContaboSaaS es una herramienta de gestión y organización interna. <strong>No es un
+                Contabo es una herramienta de gestión y organización interna. <strong>No es un
                 proveedor autorizado de timbrado de CFDI</strong>, no genera o expide comprobantes fiscales
                 ante el SAT, y no realiza declaraciones fiscales en nombre del usuario.
             </p>
@@ -380,10 +380,10 @@
             <ul>
                 <li>Mantener la confidencialidad de sus credenciales de acceso.</li>
                 <li>Todas las actividades realizadas desde su cuenta.</li>
-                <li>Notificar de inmediato a ContaboSaaS cualquier uso no autorizado de su cuenta.</li>
+                <li>Notificar de inmediato a Contabo cualquier uso no autorizado de su cuenta.</li>
             </ul>
             <p>
-                ContaboSaaS no será responsable por pérdidas derivadas del uso no autorizado de
+                Contabo no será responsable por pérdidas derivadas del uso no autorizado de
                 su cuenta cuando el usuario no haya tomado las medidas razonables de seguridad.
             </p>
         </section>
@@ -391,7 +391,7 @@
         <!-- V. Suscripción y pago -->
         <section class="legal-section" id="suscripcion">
             <h2><span class="num" aria-hidden="true">5</span> Suscripción y pago</h2>
-            <p><strong>Plan y precio:</strong> ContaboSaaS opera bajo un modelo de suscripción mensual.
+            <p><strong>Plan y precio:</strong> Contabo opera bajo un modelo de suscripción mensual.
                 El precio vigente es de <strong>$399 MXN al mes</strong> (más IVA cuando aplique),
                 sujeto a cambios con previo aviso de al menos 30 días.</p>
 
@@ -403,7 +403,7 @@
                 deberá solicitarlo con sus datos fiscales a través de los canales de soporte indicados
                 en la sección de Contacto.</p>
 
-            <p><strong>Falta de pago:</strong> En caso de que el pago no pueda procesarse, ContaboSaaS
+            <p><strong>Falta de pago:</strong> En caso de que el pago no pueda procesarse, Contabo
                 podrá suspender el acceso al servicio hasta regularizar el adeudo. Si el adeudo
                 persiste por más de 30 días, la cuenta podrá cancelarse definitivamente.</p>
 
@@ -425,7 +425,7 @@
                 automáticamente al vencer el período de prueba.
             </p>
             <p>
-                ContaboSaaS se reserva el derecho de modificar la duración del período de prueba
+                Contabo se reserva el derecho de modificar la duración del período de prueba
                 sin previo aviso para nuevos registros. Los usuarios ya registrados conservarán
                 su período de prueba original.
             </p>
@@ -434,7 +434,7 @@
         <!-- VII. Uso aceptable -->
         <section class="legal-section" id="uso-aceptable">
             <h2><span class="num" aria-hidden="true">7</span> Uso aceptable</h2>
-            <p>Al usar ContaboSaaS, el usuario se compromete a <strong>no</strong>:</p>
+            <p>Al usar Contabo, el usuario se compromete a <strong>no</strong>:</p>
             <ul>
                 <li>Usar el servicio para actividades ilegales, fraudulentas o que violen la legislación
                     mexicana aplicable, incluyendo el Código Fiscal de la Federación (CFF).</li>
@@ -447,7 +447,7 @@
                 <li>Sobrecargar intencionalmente la infraestructura del servicio.</li>
             </ul>
             <p>
-                ContaboSaaS se reserva el derecho de suspender o cancelar cuentas que violen
+                Contabo se reserva el derecho de suspender o cancelar cuentas que violen
                 las presentes condiciones de uso, sin responsabilidad y sin necesidad de aviso previo
                 cuando la violación sea grave.
             </p>
@@ -458,7 +458,7 @@
             <h2><span class="num" aria-hidden="true">8</span> Propiedad intelectual</h2>
             <p>
                 Todo el software, diseño, código fuente, logotipos, marcas, textos, gráficas
-                y demás elementos de ContaboSaaS son propiedad exclusiva del Proveedor y están
+                y demás elementos de Contabo son propiedad exclusiva del Proveedor y están
                 protegidos por la <strong>Ley Federal del Derecho de Autor</strong> y la
                 <strong>Ley de la Propiedad Industrial</strong>, así como los tratados internacionales
                 aplicables.
@@ -471,7 +471,7 @@
             <p>
                 <strong>Contenido del usuario:</strong> El usuario conserva todos los derechos sobre
                 los datos e información que cargue en la plataforma. Al usar el servicio, otorga a
-                ContaboSaaS una licencia limitada para procesar y almacenar dicho contenido
+                Contabo una licencia limitada para procesar y almacenar dicho contenido
                 exclusivamente para prestar el servicio contratado.
             </p>
         </section>
@@ -496,11 +496,11 @@
         <section class="legal-section" id="sat-compliance">
             <h2><span class="num" aria-hidden="true">10</span> Cumplimiento fiscal y SAT</h2>
             <div class="warning-box">
-                <strong>Aviso importante:</strong> ContaboSaaS es una herramienta de gestión y organización.
+                <strong>Aviso importante:</strong> Contabo es una herramienta de gestión y organización.
                 No reemplaza la responsabilidad del contador o del contribuyente ante el SAT.
             </div>
             <p>
-                ContaboSaaS facilita el seguimiento y organización de obligaciones fiscales, pero:
+                Contabo facilita el seguimiento y organización de obligaciones fiscales, pero:
             </p>
             <ul>
                 <li>No genera ni presenta declaraciones fiscales ante el SAT en nombre del usuario.</li>
@@ -511,7 +511,7 @@
                     de sus declaraciones y pagos ante el SAT.</li>
             </ul>
             <p>
-                ContaboSaaS no asume responsabilidad por multas, recargos, actualizaciones o
+                Contabo no asume responsabilidad por multas, recargos, actualizaciones o
                 sanciones del SAT derivadas del incumplimiento fiscal del usuario o de sus clientes.
             </p>
         </section>
@@ -520,7 +520,7 @@
         <section class="legal-section" id="disponibilidad">
             <h2><span class="num" aria-hidden="true">11</span> Disponibilidad del servicio</h2>
             <p>
-                ContaboSaaS procura mantener el servicio disponible <strong>24 horas al día, 7 días
+                Contabo procura mantener el servicio disponible <strong>24 horas al día, 7 días
                 a la semana</strong>, pero no garantiza disponibilidad ininterrumpida. El servicio
                 puede estar temporalmente no disponible por:
             </p>
@@ -531,7 +531,7 @@
                 <li>Actos o restricciones de autoridad</li>
             </ul>
             <p>
-                ContaboSaaS realizará sus mejores esfuerzos para minimizar las interrupciones del servicio
+                Contabo realizará sus mejores esfuerzos para minimizar las interrupciones del servicio
                 y notificar a los usuarios con la mayor antelación posible.
             </p>
         </section>
@@ -541,17 +541,17 @@
             <h2><span class="num" aria-hidden="true">12</span> Limitación de responsabilidad</h2>
             <p>En la máxima medida permitida por la legislación mexicana aplicable:</p>
             <ul>
-                <li>ContaboSaaS no será responsable por daños indirectos, incidentales, especiales,
+                <li>Contabo no será responsable por daños indirectos, incidentales, especiales,
                     consecuentes o punitivos derivados del uso o imposibilidad de uso del servicio.</li>
-                <li>La responsabilidad total acumulada de ContaboSaaS frente al usuario no excederá
+                <li>La responsabilidad total acumulada de Contabo frente al usuario no excederá
                     el importe pagado por el usuario en los últimos 3 meses de suscripción.</li>
-                <li>ContaboSaaS no garantiza que el servicio esté libre de errores, que los resultados
+                <li>Contabo no garantiza que el servicio esté libre de errores, que los resultados
                     sean precisos o que satisfaga todos los requerimientos del usuario.</li>
                 <li>El usuario es el único responsable de sus decisiones contables, fiscales y
                     administrativas tomadas con base en la información gestionada en la plataforma.</li>
             </ul>
             <p>
-                Lo anterior no aplica en casos de dolo o culpa grave imputable a ContaboSaaS.
+                Lo anterior no aplica en casos de dolo o culpa grave imputable a Contabo.
             </p>
         </section>
 
@@ -563,7 +563,7 @@
                 La cancelación será efectiva al término del período pagado; no se realizarán
                 reembolsos proporcionales por días no utilizados.</p>
 
-            <p><strong>Por ContaboSaaS:</strong> Nos reservamos el derecho de suspender o terminar
+            <p><strong>Por Contabo:</strong> Nos reservamos el derecho de suspender o terminar
                 el acceso al servicio en los siguientes casos:</p>
             <ul>
                 <li>Incumplimiento de estos Términos y Condiciones</li>
@@ -572,7 +572,7 @@
                 <li>Por decisión unilateral del Proveedor, con aviso previo de al menos 30 días</li>
             </ul>
 
-            <p><strong>Datos tras la cancelación:</strong> Una vez cancelada la cuenta, ContaboSaaS
+            <p><strong>Datos tras la cancelación:</strong> Una vez cancelada la cuenta, Contabo
                 conservará los datos del usuario por un período de <strong>30 días naturales</strong>
                 para permitir su descarga o exportación. Transcurrido dicho período, los datos
                 podrán eliminarse de manera definitiva.</p>
@@ -606,7 +606,7 @@
         <section class="legal-section" id="modificaciones">
             <h2><span class="num" aria-hidden="true">15</span> Modificaciones a los términos</h2>
             <p>
-                ContaboSaaS podrá modificar estos Términos y Condiciones en cualquier momento.
+                Contabo podrá modificar estos Términos y Condiciones en cualquier momento.
                 Los cambios serán notificados a través de:
             </p>
             <ul>
@@ -641,7 +641,7 @@
             <span style="color: var(--slate-200);">·</span>
             <a href="/">Inicio</a>
         </div>
-        <p>© {{ date('Y') }} ContaboSaaS · Software de contabilidad para despachos mexicanos</p>
+        <p>© {{ date('Y') }} Contabo · Software de contabilidad para despachos mexicanos</p>
     </footer>
 </body>
 
