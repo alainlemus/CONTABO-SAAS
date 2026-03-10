@@ -196,9 +196,11 @@ class ClientsTable
                             ->title('Nota guardada')
                             ->success()
                             ->send();
-                    }),
+                    })
+                    ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
 
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
                 ActionGroup::make([
                     Action::make('download_cer')
                         ->label('Descargar CER')
@@ -219,7 +221,8 @@ class ClientsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
                 ]),
             ])
             ->defaultSort('name');

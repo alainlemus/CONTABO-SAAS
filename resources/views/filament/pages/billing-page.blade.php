@@ -7,85 +7,65 @@
     @endif
 
     {{-- Estado de la suscripción --}}
-    <x-filament::section>
-        <x-slot name="heading">Estado de la suscripción</x-slot>
+    @if ($status === 'trial')
+        <x-filament::callout
+            color="warning"
+            icon="heroicon-o-clock"
+            heading="Período de prueba activo"
+            :description="$trialEndsAt
+                ? 'Tu prueba termina el ' . $trialEndsAt->format('d/m/Y') . ' (' . $trialEndsAt->diffForHumans() . ').'
+                : 'Estás en período de prueba.'"
+        />
+    @elseif ($status === 'active')
+        <x-filament::callout
+            color="success"
+            icon="heroicon-o-check-circle"
+            heading="Suscripción activa"
+            :description="$subscription?->ends_at
+                ? 'Próximo cobro: ' . $subscription->ends_at->format('d/m/Y') . '.'
+                : 'Tu suscripción está al corriente.'"
+        />
+    @elseif ($status === 'grace_period')
+        <x-filament::callout
+            color="warning"
+            icon="heroicon-o-exclamation-triangle"
+            heading="Período de gracia"
+            :description="$subscription?->ends_at
+                ? 'Tu acceso termina el ' . $subscription->ends_at->format('d/m/Y') . '. Reactiva para no perder el acceso.'
+                : 'Tu suscripción fue cancelada. Reactiva para no perder el acceso.'"
+        />
+    @elseif ($status === 'canceled')
+        <x-filament::callout
+            color="danger"
+            icon="heroicon-o-x-circle"
+            heading="Suscripción cancelada"
+            description="Tu suscripción fue cancelada."
+        />
+    @else
+        <x-filament::callout
+            color="gray"
+            icon="heroicon-o-minus-circle"
+            heading="Sin suscripción"
+            description="No tienes una suscripción activa."
+        />
+    @endif
 
-        <div class="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div class="space-y-1 py-1">
-                @if ($status === 'trial')
-                    <x-filament::badge color="warning" size="lg">
-                        Período de prueba activo
-                    </x-filament::badge>
-                    @if ($trialEndsAt)
-                        <p class="text-sm text-gray-500 dark:text-gray-400"
-                            style="margin-top: 0.75rem; margin-bottom: 0.75rem;">
-                            Tu prueba termina el <strong>{{ $trialEndsAt->format('d/m/Y') }}</strong>
-                            ({{ $trialEndsAt->diffForHumans() }}).
-                        </p>
-                    @endif
-                @elseif ($status === 'active')
-                    <x-filament::badge color="success" size="lg">
-                        Suscripción activa
-                    </x-filament::badge>
-                    @if ($subscription?->ends_at)
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Próximo cobro: <strong>{{ $subscription->ends_at->format('d/m/Y') }}</strong>
-                        </p>
-                    @endif
-                @elseif ($status === 'grace_period')
-                    <x-filament::badge color="warning" size="lg">
-                        Período de gracia
-                    </x-filament::badge>
-                    @if ($subscription?->ends_at)
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Tu acceso termina el <strong>{{ $subscription->ends_at->format('d/m/Y') }}</strong>.
-                            Reactiva para no perder el acceso.
-                        </p>
-                    @endif
-                @elseif ($status === 'canceled')
-                    <x-filament::badge color="danger" size="lg">
-                        Cancelada
-                    </x-filament::badge>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Tu suscripción fue cancelada.
-                    </p>
-                @else
-                    <x-filament::badge color="gray" size="lg">
-                        Sin suscripción
-                    </x-filament::badge>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        No tienes una suscripción activa.
-                    </p>
-                @endif
-            </div>
-
-            {{-- Acciones según estado --}}
-            <div class="flex flex-col gap-2 sm:flex-row">
-                @if ($status === 'trial' || $status === 'none' || $status === 'canceled')
-                    @if ($isStripeConfigured)
-                        <x-filament::button wire:click="startCheckout" color="primary" icon="heroicon-o-credit-card">
-                            Activar suscripción
-                        </x-filament::button>
-                    @endif
-                @elseif ($status === 'active')
-                    @if ($isStripeConfigured)
-                        <x-filament::button wire:click="cancelSubscription"
-                            wire:confirm="¿Seguro que deseas cancelar tu suscripción? Mantendrás el acceso hasta el final del período actual."
-                            color="danger" icon="heroicon-o-x-circle">
-                            Cancelar suscripción
-                        </x-filament::button>
-                    @endif
-                @elseif ($status === 'grace_period')
-                    @if ($isStripeConfigured)
-                        <x-filament::button wire:click="resumeSubscription" color="success"
-                            icon="heroicon-o-arrow-path">
-                            Reactivar suscripción
-                        </x-filament::button>
-                    @endif
-                @endif
-            </div>
+    {{-- Acciones según estado --}}
+    @if ($isStripeConfigured)
+        <div class="flex gap-2">
+            @if ($status === 'trial' || $status === 'none' || $status === 'canceled')
+                <x-filament::button wire:click="startCheckout" color="primary" icon="heroicon-o-credit-card">
+                    Activar suscripción
+                </x-filament::button>
+            @elseif ($status === 'active')
+                {{ $this->cancelSubscriptionAction }}
+            @elseif ($status === 'grace_period')
+                <x-filament::button wire:click="resumeSubscription" color="success" icon="heroicon-o-arrow-path">
+                    Reactivar suscripción
+                </x-filament::button>
+            @endif
         </div>
-    </x-filament::section>
+    @endif
 
     {{-- Método de pago --}}
     @if ($isStripeConfigured && in_array($status, ['active', 'grace_period']))

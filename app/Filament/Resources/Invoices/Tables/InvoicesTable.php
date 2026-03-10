@@ -162,7 +162,8 @@ class InvoicesTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
                 ]),
             ]);
     }

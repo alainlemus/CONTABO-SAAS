@@ -291,4 +291,76 @@ class BillingPageTest extends TestCase
         Livewire::test(BillingPage::class)
             ->assertDontSee('Historial de pagos');
     }
+
+    // ─── Modal de confirmación de cancelación ─────────────────────────────────
+
+    public function test_cancel_subscription_action_exists(): void
+    {
+        $this->actingAs($this->admin);
+
+        Livewire::test(BillingPage::class)
+            ->assertActionExists('cancelSubscription');
+    }
+
+    public function test_cancel_subscription_action_modal_heading(): void
+    {
+        $this->actingAs($this->admin);
+
+        $component = Livewire::test(BillingPage::class);
+        $instance = $component->instance();
+
+        $action = $instance->cancelSubscriptionAction();
+
+        $this->assertEquals('Cancelar suscripción', $action->getModalHeading());
+    }
+
+    public function test_cancel_subscription_action_modal_submit_label(): void
+    {
+        $this->actingAs($this->admin);
+
+        $component = Livewire::test(BillingPage::class);
+        $instance = $component->instance();
+
+        $action = $instance->cancelSubscriptionAction();
+
+        $this->assertEquals('Sí, cancelar suscripción', $action->getModalSubmitActionLabel());
+    }
+
+    public function test_cancel_subscription_action_requires_password(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Sin contraseña — debe fallar validación
+        Livewire::test(BillingPage::class)
+            ->callAction('cancelSubscription', data: [])
+            ->assertHasActionErrors(['password' => 'required']);
+    }
+
+    public function test_cancel_subscription_action_rejects_wrong_password(): void
+    {
+        $this->actingAs($this->admin);
+
+        // Con contraseña incorrecta, el action debe detenerse (halt) sin ejecutar cancelSubscription()
+        Livewire::test(BillingPage::class)
+            ->callAction('cancelSubscription', data: ['password' => 'wrong-password'])
+            ->assertActionHalted('cancelSubscription');
+    }
+
+    public function test_cancel_subscription_action_with_correct_password_does_not_crash(): void
+    {
+        $admin = User::factory()->create([
+            'role' => UserRole::Admin,
+            'is_active' => true,
+            'trial_ends_at' => now()->addDays(7),
+            'password' => \Illuminate\Support\Facades\Hash::make('secret123'),
+        ]);
+
+        $this->actingAs($admin);
+
+        // Stripe no configurado — con contraseña correcta ejecuta cancelSubscription()
+        // que envía notificación de warning sin crashear
+        Livewire::test(BillingPage::class)
+            ->callAction('cancelSubscription', data: ['password' => 'secret123'])
+            ->assertSuccessful();
+    }
 }

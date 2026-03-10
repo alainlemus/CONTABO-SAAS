@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\Clients\ClientResource;
 use App\Models\Client;
 use BackedEnum;
 use Filament\Forms\Components\Select;
@@ -13,6 +14,18 @@ class Dashboard extends \Filament\Pages\Dashboard
     use HasFiltersForm;
 
     protected static ?string $navigationLabel = 'Panel KPIs';
+
+    public static function canAccess(): bool
+    {
+        return filament()->auth()->user()?->isAdmin() ?? false;
+    }
+
+    public function mountCanAuthorizeAccess(): void
+    {
+        if (! static::canAccess()) {
+            $this->redirect(ClientResource::getUrl('index'));
+        }
+    }
 
     protected static ?string $title = 'Panel KPIs';
 

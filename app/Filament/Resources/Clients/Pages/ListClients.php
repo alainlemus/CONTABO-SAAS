@@ -37,7 +37,8 @@ class ListClients extends ListRecords
                     return $query;
                 }),
 
-            CreateAction::make(),
+            CreateAction::make()
+                ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
         ];
     }
 }

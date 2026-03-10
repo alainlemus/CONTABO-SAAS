@@ -14,6 +14,10 @@ class EnsureSubscribed
      * no tiene suscripción activa ni está en período de trial.
      *
      * Capturistas y viewers heredan el estado de su admin dueño.
+     *
+     * Si la suscripción expiró completamente (post-grace-period):
+     * - Se permite la entrada al panel pero se redirige a la página de expiración,
+     *   excepto si ya están en esa página o en BillingPage.
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -33,25 +37,28 @@ class EnsureSubscribed
             return $next($request);
         }
 
-        if ($this->hasAccess($owner)) {
+        // Acceso activo: trial o suscripción vigente (incluye grace period) → pasa normal
+        if ($owner->onTrial() || $owner->subscribed('default')) {
             return $next($request);
         }
 
-        return redirect()->route('subscription.index');
-    }
-
-    private function hasAccess(User $owner): bool
-    {
-        // Trial activo
-        if ($owner->onTrial()) {
-            return true;
+        // Sin ningún vínculo con la plataforma → suscripción pública
+        if ($owner->trial_ends_at === null && $owner->stripe_id === null) {
+            return redirect()->route('subscription.index');
         }
 
-        // Suscripción activa (incluye grace period)
-        if ($owner->subscribed('default')) {
-            return true;
+        // Cuenta expirada: puede entrar al panel pero solo a páginas permitidas
+        $allowedPaths = [
+            '/admin/subscription-expired-page',
+            '/admin/billing-page',
+        ];
+
+        foreach ($allowedPaths as $allowed) {
+            if (str_starts_with($request->getPathInfo(), $allowed)) {
+                return $next($request);
+            }
         }
 
-        return false;
+        return redirect('/admin/subscription-expired-page');
     }
 }

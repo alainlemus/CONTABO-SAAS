@@ -116,7 +116,7 @@ class FiscalObligationsTable
                     ->label('Marcar presentada')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (FiscalObligation $record): bool => $record->status === ObligationStatus::Pending || $record->status === ObligationStatus::Overdue)
+                    ->visible(fn (FiscalObligation $record): bool => (! auth()->user()?->isViewer()) && (bool) auth()->user()?->hasActiveAccess() && ($record->status === ObligationStatus::Pending || $record->status === ObligationStatus::Overdue))
                     ->form([
                         DatePicker::make('presented_at')
                             ->label('Fecha de presentación')
@@ -155,7 +155,8 @@ class FiscalObligationsTable
                         }
                     }),
 
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
             ])
             ->toolbarActions([
                 ExportAction::make()
@@ -174,6 +175,7 @@ class FiscalObligationsTable
                     ->requiresConfirmation()
                     ->modalHeading('Generar obligaciones fiscales')
                     ->modalDescription('Se crearán las obligaciones del mes actual para todos tus clientes activos con régimen fiscal registrado. Las existentes no se duplicarán.')
+                    ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess())
                     ->action(function () {
                         $generator = app(FiscalObligationGenerator::class);
                         $year = now()->year;
@@ -203,6 +205,7 @@ class FiscalObligationsTable
                         ->requiresConfirmation()
                         ->modalHeading('Marcar obligaciones como presentadas')
                         ->modalDescription('Se marcará la fecha de hoy como fecha de presentación. Solo se actualizarán las obligaciones pendientes o vencidas.')
+                        ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess())
                         ->action(function (\Illuminate\Support\Collection $records): void {
                             $records
                                 ->filter(fn (FiscalObligation $r): bool => in_array($r->status, [ObligationStatus::Pending, ObligationStatus::Overdue], true))
@@ -228,6 +231,7 @@ class FiscalObligationsTable
                         ->requiresConfirmation()
                         ->modalHeading('Marcar obligaciones como no aplica')
                         ->modalDescription('Las obligaciones seleccionadas se marcarán como "No aplica". Solo se actualizarán las que estén pendientes o vencidas.')
+                        ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess())
                         ->action(function (\Illuminate\Support\Collection $records): void {
                             $records
                                 ->filter(fn (FiscalObligation $r): bool => in_array($r->status, [ObligationStatus::Pending, ObligationStatus::Overdue], true))
@@ -237,7 +241,8 @@ class FiscalObligationsTable
                         })
                         ->deselectRecordsAfterCompletion(),
 
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->visible(fn (): bool => ! auth()->user()?->isViewer() && (bool) auth()->user()?->hasActiveAccess()),
                 ]),
             ])
             ->defaultSort('due_date', 'asc');

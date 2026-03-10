@@ -4,8 +4,11 @@ namespace App\Filament\Pages;
 
 use App\Models\User;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Hash;
 
 class BillingPage extends Page
 {
@@ -21,7 +24,15 @@ class BillingPage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->check() && auth()->user()->isAdmin();
+        if (! auth()->check()) {
+            return false;
+        }
+
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        // Accesible para admin tanto con suscripción activa como expirada (para renovar)
+        return $user->isAdmin();
     }
 
     public function getTitle(): string
@@ -126,6 +137,47 @@ class BillingPage extends Page
 
             return null;
         }
+    }
+
+    /**
+     * Filament Action for cancel subscription — shows a confirmation modal with password verification.
+     */
+    public function cancelSubscriptionAction(): Action
+    {
+        return Action::make('cancelSubscription')
+            ->label('Cancelar suscripción')
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->modalHeading('Cancelar suscripción')
+            ->modalDescription('¿Seguro que deseas cancelar tu suscripción? Mantendrás el acceso hasta el final del período actual de facturación.')
+            ->modalSubmitActionLabel('Sí, cancelar suscripción')
+            ->modalCancelActionLabel('Volver')
+            ->schema([
+                TextInput::make('password')
+                    ->label('Confirma tu contraseña')
+                    ->password()
+                    ->revealable()
+                    ->required()
+                    ->autocomplete('current-password'),
+            ])
+            ->action(function (array $data, Action $action): void {
+                /** @var \App\Models\User $user */
+                $user = auth()->user();
+
+                if (! Hash::check($data['password'], $user->password)) {
+                    Notification::make()
+                        ->title('Contraseña incorrecta')
+                        ->body('La contraseña ingresada no es correcta.')
+                        ->danger()
+                        ->send();
+
+                    $action->halt();
+
+                    return;
+                }
+
+                $this->cancelSubscription();
+            });
     }
 
     /**
@@ -253,6 +305,7 @@ class BillingPage extends Page
             'onTrial' => $owner->onTrial(),
             'trialEndsAt' => $owner->trialEndsAt(),
             'subscription' => $subscription,
+            'nextPaymentAt' => $status === 'active' ? $subscription?->currentPeriodEnd() : null,
             'paymentMethods' => $paymentMethods,
             'invoices' => $invoices,
             'isStripeConfigured' => $isStripeConfigured,

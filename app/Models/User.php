@@ -78,6 +78,35 @@ class User extends Authenticatable implements CanResetPasswordContract, Filament
     }
 
     /**
+     * El usuario (o su admin dueño) tiene acceso activo:
+     * trial vigente O suscripción activa (incluyendo grace period).
+     */
+    public function hasActiveAccess(): bool
+    {
+        $owner = $this->isAdmin() ? $this : (User::find($this->owner_id) ?? $this);
+
+        return $owner->onTrial() || $owner->subscribed('default');
+    }
+
+    /**
+     * El usuario (o su admin dueño) tuvo una suscripción pero ya expiró completamente
+     * (terminó el grace period y el trial también).
+     * En este estado el usuario puede entrar al panel pero no puede hacer nada.
+     */
+    public function isSubscriptionExpired(): bool
+    {
+        $owner = $this->isAdmin() ? $this : (User::find($this->owner_id) ?? $this);
+
+        // Si aún tiene acceso activo, no está expirado
+        if ($owner->onTrial() || $owner->subscribed('default')) {
+            return false;
+        }
+
+        // Está expirado si alguna vez tuvo trial (trial_ends_at existe) o tuvo stripe_id
+        return $owner->trial_ends_at !== null || $owner->stripe_id !== null;
+    }
+
+    /**
      * Devuelve el ID del admin dueño de la cuenta.
      * Si el usuario ya es admin, devuelve su propio ID.
      */
