@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
@@ -12,9 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Cashier\Billable;
 
-class User extends Authenticatable implements CanResetPasswordContract, FilamentUser
+class User extends Authenticatable implements CanResetPasswordContract, FilamentUser, HasAvatar
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use Billable, CanResetPassword, HasFactory, Notifiable;
@@ -22,6 +24,7 @@ class User extends Authenticatable implements CanResetPasswordContract, Filament
     protected $fillable = [
         'name',
         'email',
+        'avatar_url',
         'password',
         'role',
         'owner_id',
@@ -48,6 +51,13 @@ class User extends Authenticatable implements CanResetPasswordContract, Filament
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_active;
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->avatar_url
+            ? Storage::disk('public')->url($this->avatar_url)
+            : null;
     }
 
     // ─── Roles ────────────────────────────────────────────────────────────────
