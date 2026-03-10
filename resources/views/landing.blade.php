@@ -107,7 +107,7 @@
 
         .btn-primary:hover {
             background: var(--amber-dk);
-            color: #ffffff;
+            color: #ffffff !important;
         }
 
         .btn-outline {
@@ -679,7 +679,7 @@
                     <div class="pricing-price">
                         <sup>$</sup>399<small> MXN/mes</small>
                     </div>
-                    <p class="pricing-iva">+ IVA · Factura disponible</p>
+                    <!--<p class="pricing-iva">+ IVA · Factura disponible</p>-->
                 </div>
                 <div class="pricing-body">
                     <ul class="pricing-features">

@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('images/favicon.png'))
             ->brandLogo(asset('images/contabo.png'))
             ->brandLogoHeight('4rem')
+            ->brandName('Contabo')
             ->colors([
                 'primary' => Color::Amber,
             ])
