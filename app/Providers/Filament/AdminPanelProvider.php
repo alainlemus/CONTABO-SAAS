@@ -27,9 +27,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->darkMode(true)
             ->favicon(asset('images/favicon.png'))
             ->brandLogo(asset('images/contabo.png'))
-            ->brandLogoHeight('2rem')
+            ->brandLogoHeight('4rem')
             ->colors([
                 'primary' => Color::Amber,
             ])

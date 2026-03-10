@@ -530,7 +530,8 @@
 
     <!-- ── Navegación ──────────────────────────────────────────────────────────── -->
     <nav>
-        <div class="logo"><a href="/"><img src="/images/contabo.png" alt="ContaboSaaS" style="height: 2rem; display: block;"></a></div>
+        <div class="logo"><a href="/"><img src="/images/contabo.png" alt="ContaboSaaS"
+                    style="height: 4rem; display: block;"></a></div>
         <div class="nav-links">
             <a href="#features" class="nav-hide">Funciones</a>
             <a href="#pricing" class="nav-hide">Precios</a>
